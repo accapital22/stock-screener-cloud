@@ -1,501 +1,456 @@
-symbol,company_name,sector,price_range
-MMM,3M Company,Industrials,mid
-AOS,A. O. Smith Corporation,Industrials,mid
-ABT,Abbott Laboratories,Health Care,mid
-ABBV,AbbVie Inc.,Health Care,mid
-ABMD,ABIOMED Inc.,Health Care,mid
-ACN,Accenture plc,Information Technology,high
-ATVI,Activision Blizzard Inc,Communication Services,mid
-ADM,Archer-Daniels-Midland Company,Consumer Staples,mid
-ADBE,Adobe Inc.,Information Technology,high
-ADP,Automatic Data Processing Inc,Information Technology,high
-AAP,Advance Auto Parts Inc,Consumer Discretionary,mid
+A,Agilent Technologies Inc.,Health Care,high
+AA,Alcoa Corporation,Non-energy Minerals,mid
+AAP,Advance Auto Parts Inc.,Retail Trade,mid
+AAPL,Apple Inc.,Electronic Technology,high
+ABBV,AbbVie Inc.,Health Technology,high
+ABT,Abbott Laboratories,Health Technology,mid
+ACN,Accenture plc,Technology Services,high
+ADBE,Adobe Inc.,Technology Services,high
+ADI,Analog Devices Inc.,Electronic Technology,high
+ADM,Archer-Daniels-Midland Company,Process Industries,mid
+ADP,Automatic Data Processing Inc,Technology Services,high
+AEE,Ameren Corporation,Utilities,mid
+AEP,American Electric Power Company Inc.,Utilities,mid
 AES,AES Corp,Utilities,low
-AFL,AFLAC Inc,Financials,mid
-A,Agilent Technologies Inc,Health Care,high
-APD,Air Products & Chemicals Inc,Materials,high
-AKAM,Akamai Technologies Inc,Information Technology,mid
-ALK,Alaska Air Group Inc,Industrials,mid
-ALB,Albemarle Corp,Materials,high
-ARE,Alexandria Real Estate Equities Inc,Real Estate,high
-ALGN,Align Technology Inc,Health Care,high
-ALLE,Allegion PLC,Industrials,mid
-LNT,Alliant Energy Corp,Utilities,mid
-ALL,Allstate Corp,Financials,mid
-GOOGL,Alphabet Inc,Communication Services,high
-GOOG,Alphabet Inc,Communication Services,high
-MO,Altria Group Inc,Consumer Staples,mid
-AMZN,Amazon.com Inc,Consumer Discretionary,high
-AMCR,Amcor PLC,Materials,mid
-AMD,Advanced Micro Devices Inc,Information Technology,mid
-AEE,Ameren Corp,Utilities,mid
-AAL,American Airlines Group,Industrials,low
-AEP,American Electric Power,Utilities,mid
-AXP,American Express Co,Financials,high
-AIG,American International Group Inc,Financials,mid
-AMT,American Tower Corp,Real Estate,high
-AWK,American Water Works Company Inc,Utilities,high
-AMP,Ameriprise Financial Inc,Financials,high
-ABC,AmerisourceBergen Corp,Health Care,mid
-AME,Ametek Inc,Industrials,high
-AMGN,Amgen Inc,Health Care,mid
-APH,Amphenol Corp,Information Technology,high
-ADI,Analog Devices Inc,Information Technology,high
-ANSS,ANSYS Inc,Information Technology,high
-AON,Aon PLC,Financials,high
-APA,APA Corporation,Energy,mid
-AAPL,Apple Inc,Information Technology,high
-AMAT,Applied Materials Inc,Information Technology,high
-APTV,Aptiv PLC,Consumer Discretionary,mid
-ACGL,Arch Capital Group Ltd,Financials,mid
-ANET,Arista Networks Inc,Information Technology,high
-AJG,Arthur J. Gallagher & Co,Financials,high
-AIZ,Assurant Inc,Financials,mid
-T,AT&T Inc,Communication Services,low
-ATO,Atmos Energy Corp,Utilities,mid
-ADSK,Autodesk Inc,Information Technology,high
-ADP,Automatic Data Processing Inc,Information Technology,high
-AZO,AutoZone Inc,Consumer Discretionary,high
-AVB,AvalonBay Communities Inc,Real Estate,high
-AVY,Avery Dennison Corp,Materials,mid
-BKR,Baker Hughes Co,Energy,mid
-BALL,Ball Corp,Materials,mid
-BAC,Bank of America Corp,Financials,mid
-BBWI,Bath & Body Works Inc,Consumer Discretionary,mid
-BAX,Baxter International Inc,Health Care,mid
-BDX,Becton Dickinson and Co,Health Care,high
-BRK.B,Berkshire Hathaway,Financials,high
-BBY,Best Buy Co Inc,Consumer Discretionary,mid
-BIO,Bio-Rad Laboratories Inc,Health Care,high
-TECH,Bio-Techne Corp,Health Care,high
-BIIB,Biogen Inc,Health Care,mid
-BLK,BlackRock Inc,Financials,high
-BK,The Bank of New York Mellon Corp,Financials,mid
-BA,Boeing Co,Industrials,mid
-BKNG,Booking Holdings Inc,Consumer Discretionary,high
-BWA,BorgWarner Inc,Consumer Discretionary,mid
-BXP,Boston Properties Inc,Real Estate,mid
-BSX,Boston Scientific Corp,Health Care,mid
-BMY,Bristol-Myers Squibb Co,Health Care,low
-AVGO,Broadcom Inc,Information Technology,high
-BR,Broadridge Financial Solutions Inc,Information Technology,mid
-BRO,Brown & Brown Inc,Financials,mid
-BF.B,Brown-Forman Corp,Consumer Staples,mid
-CHRW,C.H. Robinson Worldwide Inc,Industrials,mid
-CDNS,Cadence Design Systems Inc,Information Technology,high
-CZR,Caesars Entertainment Inc,Consumer Discretionary,low
-CPB,Campbell Soup Co,Consumer Staples,mid
-COF,Capital One Financial Corp,Financials,mid
-CAH,Cardinal Health Inc,Health Care,mid
-KMX,CarMax Inc,Consumer Discretionary,mid
+AFL,AFLAC Incorporated,Finance,mid
+AIG,American International Group Inc.,Finance,mid
+AIZ,Assurant Inc.,Finance,mid
+AKAM,Akamai Technologies Inc.,Technology Services,mid
+AL,Air Lease Corporation,Finance,mid
+ALB,Albemarle Corporation,Process Industries,high
+ALGN,Align Technology Inc.,Health Technology,high
+ALK,Alaska Air Group Inc.,Transportation,mid
+ALL,Allstate Corporation,Finance,mid
+ALLE,Allegion plc,Consumer Durables,mid
+AMAT,Applied Materials Inc.,Producer Manufacturing,high
+AMD,Advanced Micro Devices Inc.,Electronic Technology,mid
+AME,AMETEK Inc.,Producer Manufacturing,high
+AMGN,Amgen Inc.,Health Technology,mid
+AMT,American Tower Corporation,Finance,high
+AMZN,Amazon.com Inc.,Retail Trade,high
+AN, AutoNation Inc.,Retail Trade,mid
+ANET,Arista Networks Inc.,Electronic Technology,high
+AOS,A.O. Smith Corporation,Producer Manufacturing,mid
+APD,Air Products and Chemicals Inc.,Process Industries,high
+APH,Amphenol Corporation,Electronic Technology,high
+APTV,Aptiv PLC,Producer Manufacturing,mid
+ARE,Alexandria Real Estate Equities Inc.,Finance,high
+ATO,Atmos Energy Corporation,Utilities,mid
+AVB,AvalonBay Communities Inc.,Finance,high
+AVY,Avery Dennison Corporation,Process Industries,mid
+AWK,American Water Works Company Inc.,Utilities,high
+AXP,American Express Co,Finance,high
+AZO,AutoZone Inc.,Retail Trade,high
+BA,Boeing Company,Electronic Technology,mid
+BAC,Bank of America Corporation,Finance,mid
+BALL,Ball Corporation,Process Industries,mid
+BBY,Best Buy Co. Inc.,Retail Trade,mid
+BDX,Becton Dickinson and Company,Health Technology,high
+BEN,Franklin Resources Inc.,Finance,mid
+BIIB,Biogen Inc.,Health Technology,mid
+BIO,Bio-Rad Laboratories Inc.,Health Technology,high
+BK,The Bank of New York Mellon Corporation,Finance,mid
+BLK,BlackRock Inc.,Finance,high
+BMRN,BioMarin Pharmaceutical Inc.,Health Technology,mid
+BMY,Bristol-Myers Squibb Company,Health Technology,low
+BR,Broadridge Financial Solutions Inc.,Technology Services,mid
+BRO,Brown & Brown Inc.,Finance,mid
+BWA,BorgWarner Inc.,Producer Manufacturing,mid
+BXP,BXP Inc,Finance,mid
+C,Citigroup Inc.,Finance,mid
+CAG,Conagra Brands Inc.,Consumer Staples,mid
+CAH,Cardinal Health Inc.,Distribution Services,mid
+CAT,Caterpillar Inc.,Industrials,mid
+CB,Chubb Limited,Finance,high
+CBOE,Cboe Global Markets Inc.,Finance,mid
+CBRE,CBRE Group Inc.,Finance,mid
 CCL,Carnival Corp,Consumer Discretionary,low
-CARR,Carrier Global Corp,Industrials,mid
-CTLT,Catalent Inc,Health Care,mid
-CAT,Caterpillar Inc,Industrials,mid
-CBOE,Cboe Global Markets Inc,Financials,mid
-CBRE,CBRE Group Inc,Real Estate,mid
-CDW,CDW Corp,Information Technology,high
-CE,Celanese Corp,Materials,high
-CNC,Centene Corp,Health Care,mid
-CNP,CenterPoint Energy Inc,Utilities,mid
-CDAY,Ceridian HCM Holding Inc,Information Technology,mid
-CF,CF Industries Holdings Inc,Materials,high
-CRL,Charles River Laboratories International Inc,Health Care,high
-SCHW,Charles Schwab Corp,Financials,mid
-CHTR,Charter Communications Inc,Communication Services,high
-CVX,Chevron Corp,Energy,mid
-CMG,Chipotle Mexican Grill Inc,Consumer Discretionary,high
-CB,Chubb Ltd,Financials,high
-CHD,Church & Dwight Co Inc,Consumer Staples,mid
+CDNS,Cadence Design Systems Inc.,Technology Services,high
+CDW,CDW Corporation,Technology Services,high
+CE,Celanese Corporation,Process Industries,mid
+CF,CF Industries Holdings Inc.,Process Industries,high
+CFG,Citizens Financial Group Inc.,Finance,mid
+CHD,Church & Dwight Company Inc.,Consumer Non-Durables,mid
+CHRW,C.H. Robinson Worldwide Inc.,Transportation,mid
+CHTR,Charter Communications Inc.,Consumer Services,mid
 CI,Cigna Corp,Health Care,mid
-CINF,Cincinnati Financial Corp,Financials,mid
-CTAS,Cintas Corp,Industrials,high
-CSCO,Cisco Systems Inc,Information Technology,mid
-C,Citigroup Inc,Financials,mid
-CFG,Citizens Financial Group Inc,Financials,mid
-CTXS,Citrix Systems Inc,Information Technology,mid
-CLX,The Clorox Co,Consumer Staples,mid
-CME,CME Group Inc,Financials,high
-CMS,CMS Energy Corp,Utilities,mid
-KO,Coca-Cola Co,Consumer Staples,mid
-CTSH,Cognizant Technology Solutions Corp,Information Technology,mid
-CL,Colgate-Palmolive Co,Consumer Staples,mid
-CMCSA,Comcast Corp,Communication Services,mid
-CAG,Conagra Brands Inc,Consumer Staples,mid
-COP,ConocoPhillips,Energy,mid
-ED,Consolidated Edison Inc,Utilities,mid
-STZ,Constellation Brands Inc,Consumer Staples,mid
-CPRT,Copart Inc,Industrials,high
-GLW,Corning Inc,Information Technology,mid
-CTVA,Corteva Inc,Materials,mid
+CINF,Cincinnati Financial Corporation,Finance,mid
+CL,Colgate-Palmolive Company,Consumer Non-Durables,mid
+CLX,The Clorox Co,Consumer Non-Durables,mid
+CMA,Comerica Incorporated,Finance,mid
+CMCSA,Comcast Corporation,Consumer Services,mid
+CME,CME Group Inc.,Finance,high
+CMG,Chipotle Mexican Grill Inc.,Consumer Services,high
+CMI,Cummins Inc.,Industrials,mid
+CMS,CMS Energy Corporation,Utilities,mid
+CNC,Centene Corporation,Health Services,mid
+CNP,CenterPoint Energy Inc,Utilities,mid
+COF,Capital One Financial Corporation,Finance,mid
+COP,ConocoPhillips,Energy Minerals,mid
 COST,Costco Wholesale Corp,Consumer Staples,mid
-CTRA,Coterra Energy Inc,Energy,mid
-CCI,Crown Castle Inc,Real Estate,high
-CSX,CSX Corp,Industrials,mid
-CMI,Cummins Inc,Industrials,mid
-CVS,CVS Health Corp,Health Care,mid
-DHI,D.R. Horton Inc,Consumer Discretionary,mid
-DHR,Danaher Corp,Health Care,high
-DRI,Darden Restaurants Inc,Consumer Discretionary,mid
-DVA,DaVita Inc,Health Care,mid
+CPB,The Campbell's Company,Consumer Non-Durables,mid
+CPRT,Copart Inc.,Retail Trade,high
+CRM,Salesforce Inc.,Technology Services,mid
+CSCO,Cisco Systems Inc.,Electronic Technology,mid
+CSGP,CoStar Group Inc.,Technology Services,mid
+CSX,CSX Corp,Transportation,mid
+CTAS,Cintas Corporation,Consumer Services,mid
+CTSH,Cognizant Technology Solutions Corporation,Technology Services,mid
+CTVA,Corteva Inc.,Process Industries,mid
+CVS,CVS Health Corporation,Retail Trade,mid
+CVX,Chevron Corporation,Energy Minerals,mid
+CZR,Caesars Entertainment Inc.,Consumer Discretionary,low
+D, Dominion Energy Inc.,Utilities,mid
+DAL,Delta Air Lines Inc.,Transportation,mid
+DD,DuPont de Nemours Inc.,Process Industries,mid
 DE,Deere & Co,Industrials,high
-DAL,Delta Air Lines Inc,Industrials,mid
-XRAY,DENTSPLY SIRONA Inc,Health Care,mid
-DVN,Devon Energy Corp,Energy,mid
-DXCM,DexCom Inc,Health Care,high
-FANG,Diamondback Energy Inc,Energy,mid
-DLR,Digital Realty Trust Inc,Real Estate,high
-DFS,Discover Financial Services,Financials,mid
-DISCA,Discovery Inc,Communication Services,low
-DISCK,Discovery Inc,Communication Services,low
+DFS,Discover Financial Services,Finance,mid
+DG,Dollar General Corporation,Retail Trade,mid
+DHI,D.R. Horton Inc.,Consumer Durables,mid
+DHR,Danaher Corporation,Health Technology,high
+DIS,Walt Disney Company,Consumer Services,mid
+DISCA,Discovery Inc.,Communication Services,low
+DISCK,Discovery Inc.,Communication Services,low
 DISH,DISH Network Corp,Communication Services,low
-DG,Dollar General Corp,Consumer Discretionary,mid
-DLTR,Dollar Tree Inc,Consumer Discretionary,mid
-D,Dominion Energy Inc,Utilities,mid
-DPZ,Domino's Pizza Inc,Consumer Discretionary,high
-DOV,Dover Corp,Industrials,mid
+DLR,Digital Realty Trust Inc.,Finance,high
+DLTR,Dollar Tree Inc.,Retail Trade,mid
+DOV,Dover Corporation,Producer Manufacturing,mid
 DOW,Dow Inc,Materials,mid
-DTE,DTE Energy Co,Utilities,mid
-DUK,Duke Energy Corp,Utilities,mid
 DRE,Duke Realty Corp,Real Estate,mid
-DD,DuPont de Nemours Inc,Materials,mid
-DXC,DXC Technology Co,Information Technology,low
-EMN,Eastman Chemical Co,Materials,mid
-ETN,Eaton Corp PLC,Industrials,high
-EBAY,eBay Inc,Consumer Discretionary,mid
-ECL,Ecolab Inc,Materials,high
+DRI,Darden Restaurants Inc.,Consumer Services,mid
+DTE,DTE Energy Company,Utilities,mid
+DUK,Duke Energy Corporation,Utilities,mid
+DVA,DaVita Inc.,Health Services,mid
+DVN,Devon Energy Corporation,Energy Minerals,mid
+DXCM,DexCom Inc.,Health Technology,high
+EA,Electronic Arts Inc.,Technology Services,mid
+EBAY,eBay Inc.,Retail Trade,mid
+ECL,Ecolab Inc.,Process Industries,high
+ED,Consolidated Edison Inc.,Utilities,mid
+EFX,Equifax Inc.,Commercial Services,high
 EIX,Edison International,Utilities,mid
-EW,Edwards Lifesciences Corp,Health Care,high
-EA,Electronic Arts Inc,Communication Services,mid
-EMR,Emerson Electric Co,Industrials,mid
-ENPH,Enphase Energy Inc,Information Technology,high
-ETR,Entergy Corp,Utilities,mid
-EOG,EOG Resources Inc,Energy,high
-EPAM,EPAM Systems Inc,Information Technology,high
-EFX,Equifax Inc,Industrials,high
-EQIX,Equinix Inc,Real Estate,high
-EQR,Equity Residential,Real Estate,mid
-ESS,Essex Property Trust Inc,Real Estate,high
-EL,Estee Lauder Companies Inc,Consumer Staples,high
-ETSY,Etsy Inc,Consumer Discretionary,mid
-RE,Everest Re Group Ltd,Financials,mid
-EVRG,Evergy Inc,Utilities,mid
-ES, Eversource Energy,Utilities,mid
-EXC,Exelon Corp,Utilities,mid
-EXPE,Expedia Group Inc,Consumer Discretionary,mid
-EXPD,Expeditors International of Washington Inc,Industrials,high
-EXR,Extra Space Storage Inc,Real Estate,high
-XOM,Exxon Mobil Corp,Energy,mid
-FFIV,F5 Inc,Information Technology,mid
-FB,Meta Platforms Inc,Communication Services,high
-FAST,Fastenal Co,Industrials,mid
-FRT,Federal Realty Investment Trust,Real Estate,mid
-FDX,FedEx Corp,Industrials,mid
-FIS,Fidelity National Information Services Inc,Information Technology,mid
-FITB,Fifth Third Bancorp,Financials,mid
-FE,FirstEnergy Corp,Utilities,mid
-FISV,Fiserv Inc,Information Technology,high
-FLT,FleetCor Technologies Inc,Information Technology,high
-FMC,FMC Corp,Materials,mid
+EL,Estee Lauder Companies Inc.,Consumer Non-Durables,high
+EMN,Eastman Chemical Company,Process Industries,mid
+EMR,Emerson Electric Company,Electronic Technology,mid
+EOG,EOG Resources Inc.,Energy Minerals,high
+EPAM,EPAM Systems Inc.,Technology Services,high
+EQIX,Equinix Inc.,Real Estate,high
+EQR,Equity Residential,Finance,mid
+ES,Eversource Energy,Utilities,mid
+ESS,Essex Property Trust Inc.,Finance,high
+ETN,Eaton Corp PLC,Industrials,high
+ETR,Entergy Corporation,Utilities,mid
+ETSY,Etsy Inc.,Retail Trade,mid
+EVRG,Evergy Inc.,Utilities,mid
+EW,Edwards Lifesciences Corporation,Health Technology,high
+EXC,Exelon Corporation,Utilities,mid
+EXPD,Expeditors International of Washington Inc.,Transportation,high
+EXPE,Expedia Group Inc.,Consumer Services,mid
+EXR,Extra Space Storage Inc.,Finance,high
 F,Ford Motor Co,Consumer Discretionary,low
-FTNT,Fortinet Inc,Information Technology,high
+FANG,Diamondback Energy Inc.,Energy Minerals,mid
+FAST,Fastenal Company,Distribution Services,mid
+FB,Meta Platforms Inc.,Communication Services,high
+FCX,Freeport-McMoRan Inc.,Non-energy Minerals,mid
+FDX,FedEx Corporation,Transportation,mid
+FE,FirstEnergy Corp,Utilities,mid
+FIS,Fidelity National Information Services Inc.,Technology Services,mid
+FISV,Fiserv Inc.,Technology Services,high
+FITB,Fifth Third Bancorp,Finance,mid
+FLT,FleetCor Technologies Inc.,Technology Services,high
+FMC,FMC Corp,Materials,mid
+FOX,Fox Corporation,Consumer Services,mid
+FOXA,Fox Corporation,Consumer Services,mid
+FRT,Federal Realty Investment Trust,Finance,mid
+FTI,TechnipFMC plc,Industrial Services,mid
+FTNT,Fortinet Inc.,Technology Services,high
 FTV,Fortive Corp,Industrials,mid
-FBHS,Fortune Brands Home & Security Inc,Industrials,mid
-FOXA,Fox Corp,Communication Services,mid
-FOX,Fox Corp,Communication Services,mid
-BEN,Franklin Resources Inc,Financials,mid
-FCX,Freeport-McMoRan Inc,Materials,mid
-GPS,Gap Inc,Consumer Discretionary,low
-GRMN,Garmin Ltd,Consumer Discretionary,mid
-IT, Gartner Inc,Information Technology,high
-GNRC,Generac Holdings Inc,Industrials,mid
 GD,General Dynamics Corp,Industrials,high
-GE,General Electric Co,Industrials,mid
-GIS,General Mills Inc,Consumer Staples,mid
-GM,General Motors Co,Consumer Discretionary,mid
-GPC,Genuine Parts Co,Consumer Discretionary,mid
-GILD,Gilead Sciences Inc,Health Care,mid
-GL,Globe Life Inc,Financials,mid
-GPN,Global Payments Inc,Information Technology,mid
-GS,Goldman Sachs Group Inc,Financials,high
-HAL,Halliburton Co,Energy,mid
-HIG,Hartford Financial Services Group Inc,Financials,mid
-HAS,Hasbro Inc,Consumer Discretionary,mid
-HCA,HCA Healthcare Inc,Health Care,high
-PEAK,Healthpeak Properties Inc,Real Estate,mid
-HSIC,Henry Schein Inc,Health Care,mid
-HSY,The Hershey Co,Consumer Staples,high
-HES,Hess Corp,Energy,mid
-HPE,Hewlett Packard Enterprise Co,Information Technology,low
-HLT,Hilton Worldwide Holdings Inc,Consumer Discretionary,high
-HOLX,Hologic Inc,Health Care,high
-HD,Home Depot Inc,Consumer Discretionary,mid
-HON,Honeywell International Inc,Industrials,high
-HRL,Hormel Foods Corp,Consumer Staples,mid
-HST,Host Hotels & Resorts Inc,Real Estate,mid
-HWM,Howmet Aerospace Inc,Industrials,mid
-HPQ,HP Inc,Information Technology,low
-HUM,Humana Inc,Health Care,high
-HBAN,Huntington Bancshares Inc,Financials,low
-HII,Huntington Ingalls Industries Inc,Industrials,mid
-IBM,International Business Machines,Information Technology,mid
-IEX,IDEX Corp,Industrials,high
-IDXX,IDEXX Laboratories Inc,Health Care,high
-INFO,IHS Markit Ltd,Industrials,high
-ITW,Illinois Tool Works Inc,Industrials,high
-ILMN,Illumina Inc,Health Care,high
+GE,General Electric Co,Electronic Technology,mid
+GILD,Gilead Sciences Inc.,Health Technology,mid
+GIS,General Mills Inc.,Consumer Non-Durables,mid
+GL,Globe Life Inc.,Finance,mid
+GLW,Corning Inc.,Electronic Technology,mid
+GM,General Motors Company,Consumer Durables,mid
+GNRC,Generac Holdings Inc.,Producer Manufacturing,mid
+GOOG,Alphabet Inc.,Technology Services,high
+GOOGL,Alphabet Inc.,Technology Services,high
+GPC,Genuine Parts Company,Distribution Services,mid
+GPN,Global Payments Inc.,Commercial Services,mid
+GPS,Gap Inc.,Consumer Discretionary,low
+GRMN,Garmin Ltd.,Electronic Technology,mid
+GS,Goldman Sachs Group Inc.,Finance,high
+GWW,W.W. Grainger Inc.,Distribution Services,high
+HAL,Halliburton Co,Energy Minerals,mid
+HAS,Hasbro Inc.,Consumer Durables,mid
+HCA,HCA Healthcare Inc.,Health Care,high
+HD,Home Depot Inc.,Consumer Discretionary,mid
+HES,Hess Corp,Energy Minerals,mid
+HIG,Hartford Financial Services Group Inc.,Finance,mid
+HII,Huntington Ingalls Industries Inc.,Electronic Technology,mid
+HLT,Hilton Worldwide Holdings Inc.,Consumer Services,high
+HOLX,Hologic Inc.,Health Technology,high
+HON,Honeywell International Inc.,Electronic Technology,high
+HPE,Hewlett Packard Enterprise Co.,Information Technology,low
+HPQ,HP Inc.,Information Technology,low
+HRL,Hormel Foods Corp.,Consumer Staples,mid
+HST,Host Hotels & Resorts Inc.,Real Estate,mid
+HSIC,Henry Schein Inc.,Distribution Services,mid
+HSY,The Hershey Co.,Consumer Non-Durables,high
+HUM,Humana Inc.,Health Services,high
+HWM,Howmet Aerospace Inc.,Electronic Technology,mid
+IBM,International Business Machines,Technology Services,mid
+ICE,Intercontinental Exchange Inc.,Finance,high
+IEX,IDEX Corporation,Producer Manufacturing,high
+IFF,International Flavors & Fragrances Inc.,Consumer Non-Durables,mid
+ILMN,Illumina Inc.,Health Technology,high
 INCY,Incyte Corp,Health Care,mid
-IR,Ingersoll Rand Inc,Industrials,mid
-INTC,Intel Corporation,Information Technology,low
-ICE,Intercontinental Exchange Inc,Financials,high
-IFF,International Flavors & Fragrances Inc,Materials,mid
-IP,International Paper Co,Materials,mid
-IPG,Interpublic Group of Companies Inc,Communication Services,mid
-INTU,Intuit Inc,Information Technology,high
-ISRG,Intuitive Surgical Inc,Health Care,high
-IVZ,Invesco Ltd,Financials,low
-IPGP,IPG Photonics Corp,Information Technology,mid
-IQV,IQVIA Holdings Inc,Health Care,high
-IRM,Iron Mountain Inc,Real Estate,mid
-JBHT,J.B. Hunt Transport Services Inc,Industrials,mid
-JKHY,Jack Henry & Associates Inc,Information Technology,mid
-J,Jacobs Engineering Group Inc,Industrials,mid
-SJM,J.M. Smucker Co,Consumer Staples,mid
-JNJ,Johnson & Johnson,Health Care,mid
-JCI,Johnson Controls International PLC,Industrials,mid
-JPM,JPMorgan Chase & Co,Financials,mid
-JNPR,Juniper Networks Inc,Information Technology,low
-K,Kellogg Co,Consumer Staples,mid
-KEY,KeyCorp,Financials,low
-KEYS,Keysight Technologies Inc,Information Technology,high
-KMB,Kimberly-Clark Corp,Consumer Staples,mid
-KIM,Kimco Realty Corp,Real Estate,low
-KMI,Kinder Morgan Inc,Energy,mid
-KLAC,KLA Corp,Information Technology,high
+INFO,IHS Markit Ltd,Industrials,high
+INTC,Intel Corporation,Electronic Technology,low
+INTU,Intuit Inc.,Technology Services,high
+IP,International Paper Co,Process Industries,mid
+IPG,Interpublic Group of Companies Inc.,Communication Services,mid
+IQV,IQVIA Holdings Inc.,Health Technology,high
+IR,Ingersoll Rand Inc.,Producer Manufacturing,mid
+IRM,Iron Mountain Inc.,Finance,mid
+ISRG,Intuitive Surgical Inc.,Health Technology,high
+IT,Gartner Inc.,Technology Services,high
+ITW,Illinois Tool Works Inc.,Producer Manufacturing,high
+J,Jacobs Solutions Inc.,Technology Services,mid
+JBHT,J.B. Hunt Transport Services Inc.,Transportation,mid
+JCI,Johnson Controls International plc,Producer Manufacturing,mid
+JKHY,Jack Henry & Associates Inc.,Technology Services,mid
+JNJ,Johnson & Johnson,Health Technology,mid
+JPM,JPMorgan Chase & Co,Finance,mid
+K,Kellanova,Consumer Non-Durables,mid
+KEY,KeyCorp,Finance,low
+KEYS,Keysight Technologies Inc.,Electronic Technology,high
 KHC,The Kraft Heinz Co,Consumer Staples,mid
-KR,Kroger Co,Consumer Staples,mid
-LHX,L3Harris Technologies Inc,Industrials,high
-LH,LabCorp of America Holdings,Health Care,mid
-LRCX,Lam Research Corp,Information Technology,high
-LW,Lamb Weston Holdings Inc,Consumer Staples,mid
-LVS,Las Vegas Sands Corp,Consumer Discretionary,mid
-LEG,Leggett & Platt Inc,Consumer Discretionary,low
-LDOS,Leidos Holdings Inc,Industrials,mid
-LEN,Lennar Corp,Consumer Discretionary,mid
-LLY,Eli Lilly and Co,Health Care,high
-LNC,Lincoln National Corp,Financials,low
+KIM,Kimco Realty Corp,Real Estate,low
+KMB,Kimberly-Clark Corp,Consumer Non-Durables,mid
+KMI,Kinder Morgan Inc.,Energy Minerals,mid
+KLAC,KLA Corp,Technology Services,high
+KMX,CarMax Inc.,Retail Trade,mid
+KO,Coca-Cola Co,Consumer Non-Durables,mid
+KR,Kroger Co,Retail Trade,mid
+L,Loews Corp,Finance,mid
+LDOS,Leidos Holdings Inc.,Technology Services,mid
+LEG,Leggett & Platt Inc.,Consumer Discretionary,low
+LEN,Lennar Corporation,Consumer Durables,mid
+LH,Labcorp Holdings Inc.,Health Services,mid
+LHX,L3Harris Technologies Inc.,Electronic Technology,high
 LIN,Linde PLC,Materials,high
-LYV,Live Nation Entertainment Inc,Communication Services,mid
-LKQ,LKQ Corp,Consumer Discretionary,mid
+LKQ,LKQ Corp,Consumer Durables,mid
+LLY,Eli Lilly and Co,Health Care,high
 LMT,Lockheed Martin Corp,Industrials,mid
-L,Loews Corp,Financials,mid
-LOW,Lowe's Companies Inc,Consumer Discretionary,mid
-LUMN,Lumen Technologies Inc,Communication Services,low
-LYB,LyondellBasell Industries NV,Materials,mid
-MTB,M&T Bank Corp,Financials,mid
-MRO,Marathon Oil Corp,Energy,mid
-MPC,Marathon Petroleum Corp,Energy,mid
-MKTX,MarketAxess Holdings Inc,Financials,high
-MAR,Marriott International Inc,Consumer Discretionary,high
-MMC,Marsh & McLennan Companies Inc,Financials,high
-MLM,Martin Marietta Materials Inc,Materials,high
-MAS,Masco Corp,Industrials,mid
-MA,Mastercard Inc,Information Technology,high
-MTCH,Match Group Inc,Communication Services,mid
-MKC,McCormick & Co Inc,Consumer Staples,mid
+LNC,Lincoln National Corp,Finance,low
+LNT,Alliant Energy Corp,Utilities,mid
+LOW,Lowe's Companies Inc.,Retail Trade,mid
+LRCX,Lam Research Corp,Producer Manufacturing,high
+LUMN,Lumen Technologies Inc.,Communication Services,low
+LUV,Southwest Airlines Co,Transportation,mid
+LVS,Las Vegas Sands Corp,Consumer Discretionary,mid
+LW,Lamb Weston Holdings Inc.,Consumer Non-Durables,mid
+LYB,LyondellBasell Industries NV,Process Industries,mid
+LYV,Live Nation Entertainment Inc.,Communication Services,mid
+MA,Mastercard Inc.,Technology Services,high
+MAA,Mid-America Apartment Communities Inc.,Finance,mid
+MAR,Marriott International,Consumer Services,high
+MAS,Masco Corp,Producer Manufacturing,mid
 MCD,McDonald's Corp,Consumer Discretionary,high
+MCHP,Microchip Technology Incorporated,Electronic Technology,high
 MCK,McKesson Corp,Health Care,high
-MDT,Medtronic PLC,Health Care,mid
-MRK,Merck & Co Inc,Health Care,mid
-MET,MetLife Inc,Financials,mid
-MTD,Mettler-Toledo International Inc,Health Care,high
-MGM,MGM Resorts International,Consumer Discretionary,mid
-MCHP,Microchip Technology Inc,Information Technology,high
-MU,Micron Technology Inc,Information Technology,mid
-MSFT,Microsoft Corporation,Information Technology,high
-MAA,Mid-America Apartment Communities Inc,Real Estate,mid
-MRNA,Moderna Inc,Health Care,high
-MHK,Mohawk Industries Inc,Consumer Discretionary,mid
-TAP,Molson Coors Beverage Co,Consumer Staples,mid
-MDLZ,Mondelez International Inc,Consumer Staples,mid
-MPWR,Monolithic Power Systems Inc,Information Technology,high
-MNST,Monster Beverage Corp,Consumer Staples,high
-MCO,Moody's Corp,Financials,high
-MS,Morgan Stanley,Financials,mid
-MSI,Motorola Solutions Inc,Information Technology,high
-MSCI,MSCI Inc,Financials,high
-NDAQ,Nasdaq Inc,Financials,mid
-NTAP,NetApp Inc,Information Technology,mid
-NFLX,Netflix Inc,Communication Services,mid
-NWL,Newell Brands Inc,Consumer Discretionary,low
-NEM,Newmont Corporation,Materials,mid
+MCO,Moody's Corp,Finance,high
+MDLZ,Mondelez International Inc.,Consumer Non-Durables,mid
+MDT,Medtronic plc.,Health Technology,mid
+MET,MetLife Inc.,Finance,mid
+MGM,MGM Resorts International,Consumer Services,mid
+MHK,Mohawk Industries Inc.,Producer Manufacturing,mid
+MKC,McCormick & Company Incorporated,Consumer Non-Durables,mid
+MKTX,MarketAxess Holdings Inc.,Finance,high
+MMC,Marsh & McLennan Companies Inc.,Finance,high
+MMM,3M Company,Producer Manufacturing,mid
+MNST,Monster Beverage Corporation,Consumer Non-Durables,high
+MO,Altria Group Inc.,Consumer Staples,mid
+MOS,Mosaic Company,Process Industries,mid
+MPC,Marathon Petroleum Corporation,Energy Minerals,mid
+MPWR,Monolithic Power Systems Inc.,Technology Services,high
+MRK,Merck & Company Inc.,Health Technology,mid
+MRO,Marathon Oil Corp,Energy Minerals,mid
+MS,Morgan Stanley,Finance,mid
+MSCI,MSCI Inc.,Finance,high
+MSFT,Microsoft Corporation,Technology Services,high
+MSI,Motorola Solutions Inc.,Technology Services,high
+MTB,M&T Bank Corporation,Finance,mid
+MTCH,Match Group Inc.,Technology Services,mid
+MTD,Mettler-Toledo International Inc.,Health Care,high
+MU,Micron Technology Inc.,Electronic Technology,mid
+NCLH,Norwegian Cruise Line Holdings Ltd,Consumer Discretionary,low
+NDAQ,Nasdaq Inc.,Finance,mid
+NEE,NextEra Energy Inc.,Utilities,high
+NEM,Newmont Corporation,Non-energy Minerals,mid
+NFLX,Netflix Inc.,Communication Services,mid
+NI,Nisource Inc,Utilities,low
+NKE,Nike Inc.,Consumer Non-Durables,mid
+NLOK,NortonLifeLock Inc.,Information Technology,mid
+NLSN,Nielsen Holdings PLC,Industrials,mid
+NOC,Northrop Grumman Corp,Industrials,high
+NOW,ServiceNow Inc.,Technology Services,high
+NSC,Norfolk Southern Corp,Industrials,mid
+NTAP,NetApp Inc.,Electronic Technology,mid
+NTRS,Northern Trust Corp,Finance,mid
+NUE,Nucor Corp,Non-energy Minerals,high
+NVDA,NVIDIA Corporation,Electronic Technology,high
+NVR,NVR Inc.,Consumer Durables,high
+NWL,Newell Brands Inc.,Consumer Discretionary,low
 NWSA,News Corp,Communication Services,low
 NWS,News Corp,Communication Services,low
-NEE,NextEra Energy Inc,Utilities,high
-NLSN,Nielsen Holdings PLC,Industrials,mid
-NKE,Nike Inc,Consumer Discretionary,mid
-NI,Nisource Inc,Utilities,low
-NSC,Norfolk Southern Corp,Industrials,mid
-NTRS,Northern Trust Corp,Financials,mid
-NOC,Northrop Grumman Corp,Industrials,high
-NLOK,NortonLifeLock Inc,Information Technology,mid
-NCLH,Norwegian Cruise Line Holdings Ltd,Consumer Discretionary,low
-NRG,NRG Energy Inc,Utilities,mid
-NUE,Nucor Corp,Materials,high
-NVDA,NVIDIA Corporation,Information Technology,high
-NVR,NVR Inc,Consumer Discretionary,high
-NXPI,NXP Semiconductors NV,Information Technology,high
-ORLY,O'Reilly Automotive Inc,Consumer Discretionary,high
-OXY,Occidental Petroleum Corp,Energy,mid
-ODFL,Old Dominion Freight Line Inc,Industrials,high
-OMC,Omnicom Group Inc,Communication Services,mid
-OKE,ONEOK Inc,Energy,mid
-ORCL,Oracle Corp,Information Technology,high
+NXPI,NXP Semiconductors NV,Electronic Technology,high
+O,Realty Income Corporation,Finance,mid
+ODFL,Old Dominion Freight Line Inc.,Transportation,high
 OGN,Organon & Co,Health Care,low
+OKE,ONEOK Inc.,Energy Minerals,mid
+OMC,Omnicom Group Inc.,Commercial Services,mid
+ORCL,Oracle Corp,Technology Services,high
+ORLY,O'Reilly Automotive Inc.,Retail Trade,high
 OTIS,Otis Worldwide Corp,Industrials,mid
-PCAR,PACCAR Inc,Industrials,mid
-PKG,Packaging Corp of America,Materials,mid
+OXY,Occidental Petroleum Corporation,Energy Minerals,mid
+PAYX,Paychex Inc.,Technology Services,mid
+PCAR,PACCAR Inc.,Producer Manufacturing,mid
+PCG,Pacific Gas & Electric Co.,Utilities,mid
+PEAK,Healthpeak Properties Inc.,Real Estate,mid
+PEG,Public Service Enterprise Group Incorporated,Utilities,mid
+PEP,PepsiCo Inc.,Consumer Non-Durables,mid
+PFE,Pfizer Inc.,Health Care,low
+PFG,Principal Financial Group Inc.,Finance,mid
+PG,Procter & Gamble Co,Consumer Non-Durables,mid
+PGR,Progressive Corp,Finance,mid
 PH,Parker-Hannifin Corp,Industrials,high
-PAYX,Paychex Inc,Information Technology,mid
-PAYC,Paycom Software Inc,Information Technology,high
-PYPL,PayPal Holdings Inc,Information Technology,mid
-PENN,Penn National Gaming Inc,Consumer Discretionary,low
-PNR,Pentair PLC,Industrials,mid
-PBCT,People's United Financial Inc,Financials,low
-PEP,PepsiCo Inc,Consumer Staples,mid
-PKI,PerkinElmer Inc,Health Care,high
-PFE,Pfizer Inc,Health Care,low
-PM,Philip Morris International Inc,Consumer Staples,mid
-PSX,Phillips 66,Energy,mid
-PNW,Pinnacle West Capital Corp,Utilities,mid
-PXD,Pioneer Natural Resources Co,Energy,high
-PNC,PNC Financial Services Group Inc,Financials,mid
+PKG,Packaging Corporation of America,Process Industries,mid
+PKI,PerkinElmer Inc.,Health Care,high
+PLD,Prologis Inc.,Finance,high
+PM,Philip Morris International Inc.,Consumer Staples,mid
+PNC,PNC Financial Services Group Inc.,Finance,mid
+PNR,Pentair plc.,Producer Manufacturing,mid
+PNW,Pinnacle West Capital Corporation,Utilities,mid
 POOL,Pool Corp,Consumer Discretionary,high
-PPG,PPG Industries Inc,Materials,mid
+PPG,PPG Industries Inc.,Process Industries,mid
 PPL,PPL Corp,Utilities,low
-PFG,Principal Financial Group Inc,Financials,mid
-PG,Procter & Gamble Co,Consumer Staples,mid
-PGR,Progressive Corp,Financials,mid
-PLD,Prologis Inc,Real Estate,high
-PRU,Prudential Financial Inc,Financials,mid
-PTC,PTC Inc,Information Technology,high
-PEG,Public Service Enterprise Group Inc,Utilities,mid
-PSA,Public Storage,Real Estate,high
-PHM,PulteGroup Inc,Consumer Discretionary,mid
-PVH,PVH Corp,Consumer Discretionary,mid
-QRVO,Qorvo Inc,Information Technology,mid
-PWR,Quanta Services Inc,Industrials,high
-QCOM,QUALCOMM Inc,Information Technology,mid
-DGX,Quest Diagnostics Inc,Health Care,mid
-RL,Ralph Lauren Corp,Consumer Discretionary,mid
-RJF,Raymond James Financial Inc,Financials,mid
-RTX,Raytheon Technologies Corp,Industrials,mid
-O,Realty Income Corp,Real Estate,mid
-REG,Regency Centers Corp,Real Estate,mid
-REGN,Regeneron Pharmaceuticals Inc,Health Care,high
-RF,Regions Financial Corp,Financials,low
-RSG,Republic Services Inc,Industrials,mid
-RMD,ResMed Inc,Health Care,high
-RHI,Robert Half International Inc,Industrials,mid
-ROK,Rockwell Automation Inc,Industrials,high
-ROL,Rollins Inc,Industrials,mid
-ROP,Roper Technologies Inc,Industrials,high
-ROST,Ross Stores Inc,Consumer Discretionary,mid
+PRU,Prudential Financial Inc.,Finance,mid
+PSA,Public Storage,Finance,high
+PSX,Phillips 66,Energy Minerals,mid
+PTC,PTC Inc.,Technology Services,high
+PXD,Pioneer Natural Resources Co,Energy Minerals,high
+PYPL,PayPal Holdings Inc.,Commercial Services,mid
+QCOM,QUALCOMM Incorporated,Electronic Technology,mid
+QRVO,Qorvo Inc.,Electronic Technology,mid
 RCL,Royal Caribbean Group,Consumer Discretionary,low
-SPGI,S&P Global Inc,Financials,high
-CRM,Salesforce Inc,Information Technology,mid
-SBAC,SBA Communications Corp,Real Estate,high
-SLB,Schlumberger NV,Energy,mid
-STX,Seagate Technology Holdings PLC,Information Technology,mid
+RE,Everest Re Group Ltd,Finance,mid
+REG,Regency Centers Corporation,Finance,mid
+REGN,Regeneron Pharmaceuticals Inc.,Health Technology,high
+RF,Regions Financial Corp,Finance,low
+RHI,Robert Half Inc.,Commercial Services,mid
+RJF,Raymond James Financial Inc.,Finance,mid
+RL,Ralph Lauren Corp,Consumer Discretionary,mid
+RMD,ResMed Inc.,Health Technology,high
+ROK,Rockwell Automation Inc.,Industrials,high
+ROL,Rollins Inc.,Commercial Services,mid
+ROP,Roper Technologies Inc.,Industrials,high
+ROST,Ross Stores Inc.,Retail Trade,mid
+RSG,Republic Services Inc.,Industrial Services,mid
+RTX,Raytheon Technologies Corp,Electronic Technology,mid
+SBAC,SBA Communications Corp.,Finance,high
+SBUX,Starbucks Corporation,Consumer Services,mid
+SCHW,Charles Schwab Corp,Finance,mid
 SEE,Sealed Air Corp,Materials,mid
-SRE,Sempra Energy,Utilities,mid
-NOW,ServiceNow Inc,Information Technology,high
 SHW,Sherwin-Williams Co,Materials,high
-SPG,Simon Property Group Inc,Real Estate,mid
-SWKS,Skyworks Solutions Inc,Information Technology,mid
-SNA,Snap-on Inc,Industrials,mid
+SIVB,SVB Financial Group,Finance,high
+SJM,J.M. Smucker Co,Consumer Staples,mid
+SLB,Schlumberger N.V.,Industrial Services,mid
+SNA,Snap-on Inc.,Industrials,mid
+SNPS,Synopsys Inc.,Technology Services,high
 SO,Southern Co,Utilities,mid
-LUV,Southwest Airlines Co,Industrials,mid
-SWK,Stanley Black & Decker Inc,Industrials,mid
-SBUX,Starbucks Corp,Consumer Discretionary,mid
-STT,State Street Corp,Financials,mid
+SPGI,S&P Global Inc.,Finance,high
+SPG,Simon Property Group Inc.,Finance,mid
+SRE,Sempra Energy,Utilities,mid
 STE,Steris PLC,Health Care,high
-SYK,Stryker Corp,Health Care,high
-SIVB,SVB Financial Group,Financials,high
-SYF,Synchrony Financial,Financials,low
-SNPS,Synopsys Inc,Information Technology,high
-SYY,Sysco Corp,Consumer Staples,mid
-TMUS,T-Mobile US Inc,Communication Services,mid
-TROW,T. Rowe Price Group Inc,Financials,mid
-TTWO,Take-Two Interactive Software Inc,Communication Services,mid
-TPR,Tapestry Inc,Consumer Discretionary,mid
-TGT,Target Corp,Consumer Discretionary,mid
-TEL,TE Connectivity Ltd,Information Technology,high
-TDY,Teledyne Technologies Inc,Industrials,high
-TFX,Teleflex Inc,Health Care,high
-TER,Teradyne Inc,Information Technology,mid
-TSLA,Tesla Inc,Consumer Discretionary,high
-TXN,Texas Instruments Inc,Information Technology,mid
-TXT,Textron Inc,Industrials,mid
-TMO,Thermo Fisher Scientific Inc,Health Care,high
-TJX,TJX Companies Inc,Consumer Discretionary,mid
-TSCO,Tractor Supply Co,Consumer Discretionary,mid
+STT,State Street Corp,Finance,mid
+STZ,Constellation Brands Inc.,Consumer Staples,mid
+SWKS,Skyworks Solutions Inc.,Electronic Technology,mid
+SWK,Stanley Black & Decker Inc.,Consumer Durables,mid
+SYF,Synchrony Financial,Finance,low
+SYY,Sysco Corp,Distribution Services,mid
+T,AT&T Inc,Communication Services,low
+TAP,Molson Coors Beverage Company,Consumer Non-Durables,mid
+TDG,TransDigm Group Inc.,Industrials,high
+TEL,TE Connectivity Ltd,Electronic Technology,high
+TER,Teradyne Inc.,Electronic Technology,mid
+TFC,Truist Financial Corp,Finance,mid
+TGT,Target Corporation,Retail Trade,mid
+TECH,Bio-Techne Corp,Health Care,high
+TEL,TE Connectivity Ltd,Electronic Technology,high
+TFX,Teleflex Incorporated,Health Technology,high
+TJX,TJX Companies Inc.,Retail Trade,mid
+TMO,Thermo Fisher Scientific Inc.,Health Technology,high
+TMUS,T-Mobile US Inc.,Communications,mid
+TPR,Tapestry Inc.,Retail Trade,mid
+TRMB,Trimble Inc.,Technology Services,mid
+TROW,T. Rowe Price Group Inc.,Finance,mid
+TRV,Travelers Companies Inc.,Finance,mid
+TSCO,Tractor Supply Co,Retail Trade,mid
+TSLA,Tesla Inc.,Consumer Discretionary,high
+TSN,Tyson Foods Inc.,Consumer Staples,mid
 TT,Trane Technologies PLC,Industrials,high
-TDG,TransDigm Group Inc,Industrials,high
-TRV,Travelers Companies Inc,Financials,mid
-TRMB,Trimble Inc,Information Technology,mid
-TFC,Truist Financial Corp,Financials,mid
-TWTR,Twitter Inc,Communication Services,mid
-TYL,Tyler Technologies Inc,Information Technology,high
-TSN,Tyson Foods Inc,Consumer Staples,mid
-UDR,UDR Inc,Real Estate,mid
-ULTA,Ulta Beauty Inc,Consumer Discretionary,high
-USB,U.S. Bancorp,Financials,mid
-UAA,Under Armour Inc,Consumer Discretionary,low
-UA,Under Armour Inc,Consumer Discretionary,low
-UNP,Union Pacific Corp,Industrials,high
-UAL,United Airlines Holdings Inc,Industrials,low
-UNH,UnitedHealth Group Inc,Health Care,high
-UPS,United Parcel Service Inc,Industrials,mid
-URI,United Rentals Inc,Industrials,high
-UHS,Universal Health Services Inc,Health Care,mid
-UNM,Unum Group,Financials,low
-VLO,Valero Energy Corp,Energy,mid
-VTR,Ventas Inc,Real Estate,mid
-VRSN,Verisign Inc,Information Technology,high
-VRSK,Verisk Analytics Inc,Industrials,high
-VZ,Verizon Communications Inc,Communication Services,mid
-VRTX,Vertex Pharmaceuticals Inc,Health Care,high
+TTWO,Take-Two Interactive Software Inc.,Technology Services,mid
+TWTR,Twitter Inc.,Communication Services,mid
+TXN,Texas Instruments Inc.,Electronic Technology,mid
+TXT,Textron Inc.,Electronic Technology,mid
+TYL,Tyler Technologies Inc.,Technology Services,high
+UAL,United Airlines Holdings Inc.,Transportation,low
+UAA,Under Armour Inc.,Consumer Discretionary,low
+UA,Under Armour Inc.,Consumer Discretionary,low
+UDR,UDR Inc.,Finance,mid
+UHS,Universal Health Services Inc.,Health Services,mid
+ULTA,Ulta Beauty Inc.,Consumer Discretionary,high
+UNH,UnitedHealth Group Inc.,Health Care,high
+UNM,Unum Group,Finance,low
+UNP,Union Pacific Corporation,Transportation,high
+UPS,United Parcel Service Inc.,Transportation,mid
+URI,United Rentals Inc.,Industrials,high
+USB,U.S. Bancorp,Finance,mid
+V,Visa Inc.,Technology Services,high
 VFC,VF Corp,Consumer Discretionary,mid
-VIAC,ViacomCBS Inc,Communication Services,low
-VTRS,Viatris Inc,Health Care,low
-V,Visa Inc,Information Technology,high
-VNO,Vornado Realty Trust,Real Estate,low
+VIAC,ViacomCBS Inc.,Communication Services,low
+VLO,Valero Energy Corporation,Energy Minerals,mid
 VMC,Vulcan Materials Co,Materials,high
-WRB,W.R. Berkley Corp,Financials,mid
+VNO,Vornado Realty Trust,Real Estate,low
+VRSK,Verisk Analytics Inc.,Technology Services,high
+VRSN,Verisign Inc.,Technology Services,high
+VRTX,Vertex Pharmaceuticals Inc.,Health Technology,high
+VTR,Ventas Inc.,Finance,mid
+VTRS,Viatris Inc.,Health Care,low
+VZ,Verizon Communications Inc.,Communications,mid
 WAB,Wabtec Corp,Industrials,mid
-WBA,Walgreens Boots Alliance Inc,Consumer Staples,low
-WMT,Walmart Inc,Consumer Staples,mid
-DIS,Walt Disney Co,Communication Services,mid
-WM,Waste Management Inc,Industrials,high
 WAT,Waters Corp,Health Care,high
-WEC,WEC Energy Group Inc,Utilities,mid
-WFC,Wells Fargo & Co,Financials,mid
-WELL,Welltower Inc,Real Estate,mid
-WST,West Pharmaceutical Services Inc,Health Care,high
-WDC,Western Digital Corp,Information Technology,low
-WU,Western Union Co,Financials,low
-WRK,WestRock Co,Materials,mid
+WBA,Walgreens Boots Alliance Inc.,Consumer Staples,low
+WDC,Western Digital Corp,Electronic Technology,low
+WEC,WEC Energy Group Inc.,Utilities,mid
+WELL,Welltower Inc.,Finance,mid
+WFC,Wells Fargo & Co,Finance,mid
+WHR,Whirlpool Corp,Consumer Durables,mid
+WM,Waste Management Inc.,Industrial Services,high
+WMB,Williams Companies Inc.,Energy Minerals,mid
+WMT,Walmart Inc.,Retail Trade,mid
+WST,West Pharmaceutical Services Inc.,Health Technology,high
+WU,Western Union Co,Finance,low
 WY,Weyerhaeuser Co,Real Estate,mid
-WHR,Whirlpool Corp,Consumer Discretionary,mid
-WMB,Williams Companies Inc,Energy,mid
-WLTW,Willis Towers Watson PLC,Financials,high
 WYNN,Wynn Resorts Ltd,Consumer Discretionary,mid
-XEL,Xcel Energy Inc,Utilities,mid
-XLNX,Xilinx Inc,Information Technology,high
-XYL,Xylem Inc,Industrials,mid
-YUM,Yum! Brands Inc,Consumer Discretionary,high
-ZBRA,Zebra Technologies Corp,Information Technology,high
-ZBH,Zimmer Biomet Holdings Inc,Health Care,mid
-ZION,Zions Bancorp NA,Financials,low
-ZTS,Zoetis Inc,Health Care,high
+XEL,Xcel Energy Inc.,Utilities,mid
+XLNX,Xilinx Inc.,Technology Services,high
+XOM,Exxon Mobil Corp,Energy Minerals,mid
+XYL,Xylem Inc.,Producer Manufacturing,mid
+YUM,Yum! Brands Inc.,Consumer Services,high
+ZBRA,Zebra Technologies Corp,Technology Services,high
+ZBH,Zimmer Biomet Holdings Inc.,Health Technology,mid
+ZION,Zions Bancorp NA,Finance,low
+ZTS,Zoetis Inc.,Health Technology,high
