@@ -36,6 +36,7 @@ st.markdown("""
 class OptimizedScreener:
     def __init__(self):
         self.results = []
+        self.debug_info = []
     
     def load_sp500_symbols(self):
         """Load S&P 500 symbols with robust error handling"""
@@ -304,9 +305,22 @@ class OptimizedScreener:
             progress_bar = st.progress(0)
             status_text = st.empty()
             
+            # DEBUG: Let's see what symbols we're actually screening
+            st.write(f"🔍 Screening these symbols: {qualified_symbols}")
+            
+            # Add longer delay to avoid rate limiting
+            delay_between_requests = 0.3  # Increased from 0.1 to 0.3 seconds
+            
             for i, symbol in enumerate(qualified_symbols):
-                status_text.text(f"🔍 Screening {symbol}...")
+                status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
                 result, message = self.screen_stock(symbol, params)
+                
+                # Store debug info
+                self.debug_info.append({
+                    'symbol': symbol,
+                    'passed': result is not None,
+                    'message': message
+                })
                 
                 if result:
                     results.append(result)
@@ -314,10 +328,30 @@ class OptimizedScreener:
                 else:
                     st.error(f"❌ {symbol}: {message}")
                 
-                progress_bar.progress((i + 1) / len(demo_symbols))
-                time.sleep(0.1)
+                progress_bar.progress((i + 1) / len(qualified_symbols))
+                time.sleep(delay_between_requests)  # Increased delay
             
             status_text.text("Screening complete!")
+            
+            # Show debug summary
+            if not results:
+                st.error("❌ No stocks passed screening criteria!")
+                st.markdown("### 🔍 Debug Information")
+                passed_count = sum(1 for info in self.debug_info if info['passed'])
+                st.write(f"**Summary:** {passed_count}/{len(self.debug_info)} stocks passed screening")
+                
+                # Show reasons for failure
+                failure_reasons = {}
+                for info in self.debug_info:
+                    if not info['passed']:
+                        reason = info['message']
+                        failure_reasons[reason] = failure_reasons.get(reason, 0) + 1
+                
+                if failure_reasons:
+                    st.write("**Failure Reasons:**")
+                    for reason, count in failure_reasons.items():
+                        st.write(f"- {reason}: {count} stocks")
+            
             return results
             
         except Exception as e:
@@ -505,10 +539,9 @@ def main():
     - **Efficient**: Only screens likely candidates
     
     ### 🔧 Fixes Applied:
-    - **Robust symbol loading** with multiple fallback sources
-    - **Better error handling** for missing columns
-    - **Demo mode** with limited symbols for testing
-    - **Debug information** to troubleshoot data issues
+    - **Better debugging** to see why stocks fail
+    - **Increased delays** to avoid rate limiting
+    - **Detailed failure analysis** to understand screening results
     """)
 
 if __name__ == "__main__":
