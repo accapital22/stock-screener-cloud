@@ -42,8 +42,8 @@ class OptimizedScreener:
         try:
             # Try multiple possible data sources
             urls = [
-                "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
                 "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv",
+		"https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
                 "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
             ]
             
