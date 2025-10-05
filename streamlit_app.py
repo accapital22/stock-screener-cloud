@@ -304,11 +304,7 @@ class OptimizedScreener:
             progress_bar = st.progress(0)
             status_text = st.empty()
             
-            # Limit to first 20 symbols for demo purposes (remove this in production)
-            demo_symbols = qualified_symbols[:20]
-            st.info(f"🔍 Screening first {len(demo_symbols)} symbols for demo (remove limit in production)")
-            
-            for i, symbol in enumerate(demo_symbols):
+            for i, symbol in enumerate(qualified_symbols):
                 status_text.text(f"🔍 Screening {symbol}...")
                 result, message = self.screen_stock(symbol, params)
                 
