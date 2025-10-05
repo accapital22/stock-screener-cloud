@@ -22,9 +22,9 @@ warnings.filterwarnings('ignore')
 class CloudEmailService:
     def __init__(self):
         self.config = {
-            'from_email': 'erndollars@gmail.com',      # UPDATE THIS
-            'to_email': 'accapital22@gmail.com',         # UPDATE THIS  
-            'password': 'ccpg yrqt kbor fuwk',           # UPDATE THIS (Gmail app password)
+            'from_email': '',      # UPDATE THIS
+            'to_email': '',         # UPDATE THIS  
+            'password': '',           # UPDATE THIS (Gmail app password)
             'smtp_server': 'smtp.gmail.com',
             'smtp_port': 587,
             'dashboard_url': 'https://stock-screener-cloud-vcmt76mjgjwrvh8pcmexoz.streamlit.app/'  # YOUR ACTUAL URL!
@@ -133,10 +133,14 @@ class CloudEmailService:
             return None, f"Options error: {str(e)}"
     
     def check_market_cap_category(self, market_cap):
-        if market_cap >= 200e9: return "Mega-Cap"
-        elif market_cap >= 10e9: return "Large-Cap"
-        elif market_cap >= 2e9: return "Mid-Cap"
-        else: return "Small-Cap"
+        if market_cap >= 200e9: 
+            return "Mega-Cap"
+        elif market_cap >= 10e9: 
+            return "Large-Cap"
+        elif market_cap >= 2e9: 
+            return "Mid-Cap"
+        else: 
+            return "Small-Cap"
     
     def screen_stock(self, symbol):
         try:
@@ -332,6 +336,17 @@ class CloudEmailService:
             print(f"❌ Enhanced PDF creation failed: {e}")
             return io.BytesIO()
     
+    def get_sp500_symbols(self):
+        """Get S&P 500 symbols for screening"""
+        return [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 
+            'V', 'PG', 'UNH', 'HD', 'DIS', 'PYPL', 'NFLX', 'ADBE', 'CRM', 'INTC', 
+            'CSCO', 'PEP', 'T', 'ABT', 'TMO', 'COST', 'AVGO', 'TXN', 'LLY', 'WMT',
+            'XOM', 'CVX', 'MRK', 'PFE', 'ABBV', 'DHR', 'MDT', 'BMY', 'UPS', 'SBUX',
+            'AMGN', 'HON', 'RTX', 'LOW', 'BA', 'CAT', 'DE', 'MMM', 'GE', 'F',
+            'GS', 'NKE', 'IBM', 'AMD', 'QCOM', 'TGT', 'LMT', 'BKNG', 'NOW', 'INTU'
+        ]
+    
     def send_daily_alert(self):
         """Send daily mobile-friendly email with dashboard link AND PDF attachment"""
         try:
@@ -430,36 +445,6 @@ class CloudEmailService:
         except Exception as e:
             print(f"❌ Failed to send alert: {e}")
             return False
-    
-    def load_sp500_symbols(self):
-    	"""Load S&P 500 symbols with robust error handling"""
-    	try:
-        	# USE YOUR CUSTOM CSV DIRECTLY
-        	url = "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv"
-        	df = pd.read_csv(url)
-        
-        	# Find the symbol column in YOUR CSV
-        	symbol_col = None
-        	for col in df.columns:
-            	    if 'symbol' in col.lower() or 'ticker' in col.lower() or 'Symbol' in col:
-                	symbol_col = col
-                	break
-        
-        	if symbol_col:
-            	    print(f"✅ Loaded S&P 500 symbols from YOUR sp500_symbols.csv")
-            	    # Create a standardized dataframe
-                    symbols_df = pd.DataFrame({
-                	'symbol': df[symbol_col].str.upper().tolist(),
-                	'price_range': ['mid'] * len(df)  # Default price range
-            })
-            return symbols_df
-        else:
-            raise Exception("No symbol column found in your CSV")
-            
-    except Exception as e:
-        print(f"❌ Error loading your CSV: {str(e)}")
-        print("🔄 Using fallback symbols instead")
-        return self.get_fallback_symbols()
     
     def start_service(self):
         """Start the daily email service"""
