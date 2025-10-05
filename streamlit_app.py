@@ -392,9 +392,47 @@ def display_options_details(selected_stock):
             total_oi = sum(opt['open_interest'] for opt in selected_stock['options_details'])
             st.metric("Total Open Interest", f"{total_oi:,}")
 
+def create_tradingview_watchlist(symbols):
+    """Create TradingView watchlist content"""
+    if not symbols:
+        return None
+    
+    # Format symbols for TradingView (comma-separated)
+    watchlist_content = ",".join(symbols)
+    
+    return watchlist_content
+
+def create_tradingview_multichart_url(symbols):
+    """Create TradingView multi-chart URL"""
+    if not symbols:
+        return None
+    
+    # TradingView multi-chart URL format
+    base_url = "https://www.tradingview.com/chart/"
+    symbols_param = ",".join([f"NYSE:{s}" for s in symbols])
+    url = f"{base_url}?symbol={symbols_param}"
+    
+    return url
+
+def create_tradingview_watchlist_file(symbols):
+    """Create a watchlist file that can be imported into TradingView"""
+    if not symbols:
+        return None
+    
+    # TradingView watchlist format (simple text file with one symbol per line)
+    watchlist_content = "\n".join(symbols)
+    
+    return watchlist_content
+
 def main():
     st.markdown('<h1 class="main-header">📈 Stock Screener Pro - Complete</h1>', unsafe_allow_html=True)
     st.markdown("### Full S&P 500 Screening with Options Data")
+    
+    # Initialize session state to preserve results
+    if 'screening_results' not in st.session_state:
+        st.session_state.screening_results = None
+    if 'screening_params' not in st.session_state:
+        st.session_state.screening_params = None
     
     # Initialize screener
     screener = OptimizedScreener()
@@ -446,9 +484,20 @@ def main():
         with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
             results = screener.run_optimized_screener(params)
         
-        # Display results
+        # Store results in session state
+        st.session_state.screening_results = results
+        st.session_state.screening_params = params
+    
+    # Display results from session state (if they exist)
+    if st.session_state.screening_results is not None:
+        results = st.session_state.screening_results
+        params = st.session_state.screening_params
+        
         if results:
             st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
+            
+            # Extract symbols for TradingView
+            passing_symbols = [r['symbol'] for r in results]
             
             # Results table
             results_df = pd.DataFrame([{
@@ -463,12 +512,53 @@ def main():
             
             st.dataframe(results_df, use_container_width=True)
             
+            # TradingView Integration Section
+            st.markdown("### 📊 TradingView Integration")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                # Copy to clipboard option
+                watchlist_text = create_tradingview_watchlist(passing_symbols)
+                st.text_area("📋 Copy to Clipboard", 
+                           value=watchlist_text, 
+                           height=100,
+                           help="Copy these symbols and paste into TradingView watchlist")
+            
+            with col2:
+                # Download watchlist file
+                watchlist_file = create_tradingview_watchlist_file(passing_symbols)
+                st.download_button(
+                    label="📥 Download Watchlist File",
+                    data=watchlist_file,
+                    file_name="tradingview_watchlist.txt",
+                    mime="text/plain",
+                    help="Download as .txt file and import into TradingView"
+                )
+            
+            with col3:
+                # Multi-chart link
+                multi_chart_url = create_tradingview_multichart_url(passing_symbols[:4])  # Limit to 4 for multi-chart
+                if multi_chart_url:
+                    st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
+                    st.caption("Opens first 4 symbols in TradingView multi-chart")
+            
+            st.markdown("""
+            **How to import into TradingView:**
+            1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
+            2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
+            3. **Multi-Chart**: Click the link to open multiple charts simultaneously
+            """)
+            
             # Detailed analysis section
             st.markdown("### 📊 Detailed Analysis")
             
-            # Let user select a stock for detailed view
-            selected_symbol = st.selectbox("Select stock for detailed analysis", 
-                                         [r['symbol'] for r in results])
+            # Let user select a stock for detailed view - THIS IS NOW STATE-FUL
+            selected_symbol = st.selectbox(
+                "Select stock for detailed analysis", 
+                [r['symbol'] for r in results],
+                key="stock_selector"  # Important: Add a key to make this widget stateful
+            )
             
             if selected_symbol:
                 selected_stock = next(r for r in results if r['symbol'] == selected_symbol)
@@ -509,13 +599,15 @@ def main():
     - **Full S&P 500** screening with pre-filtering
     - **Detailed options chain** analysis
     - **Options criteria**: price, delta, open interest, expiration
+    - **TradingView integration** for easy watchlist creation
+    - **State persistence** - results don't reset when selecting symbols
     - **Mobile-optimized** cloud deployment
     - **Efficient**: Only screens likely candidates
     
-    ### 🔧 Clean Output:
-    - **Only shows passing symbols** - no clutter from failed screenings
-    - **Clean interface** - focus on successful results only
-    - **Progress tracking** - still shows overall progress through all symbols
+    ### 🔧 State Fix Applied:
+    - **Session state** preserves screening results between interactions
+    - **Widget keys** prevent reset when selecting different symbols
+    - **Persistent data** allows you to explore results without re-screening
     """)
 
 if __name__ == "__main__":
