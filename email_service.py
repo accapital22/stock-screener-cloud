@@ -432,45 +432,33 @@ class CloudEmailService:
             return False
     
     def load_sp500_symbols(self):
-    """Load S&P 500 symbols with robust error handling"""
-    try:
-        # Try multiple possible data sources - PUT YOUR URL FIRST!
-        urls = [
-            # YOUR CUSTOM CSV - PRIORITY 1
-            "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv",
-            # Fallback sources
-            "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
-            "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
-        ]
+    	"""Load S&P 500 symbols with robust error handling"""
+    	try:
+        	# USE YOUR CUSTOM CSV DIRECTLY
+        	url = "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv"
+        	df = pd.read_csv(url)
         
-        for url in urls:
-            try:
-                df = pd.read_csv(url)
-                # Check for common column names that might contain symbols
-                symbol_col = None
-                for col in df.columns:
-                    if 'symbol' in col.lower() or 'ticker' in col.lower() or 'Symbol' in col:
-                        symbol_col = col
-                        break
-                
-                if symbol_col:
-                    st.success(f"✅ Loaded S&P 500 symbols from {url.split('/')[-1]}")
-                    # Create a standardized dataframe
+        	# Find the symbol column in YOUR CSV
+        	symbol_col = None
+        	for col in df.columns:
+            	    if 'symbol' in col.lower() or 'ticker' in col.lower() or 'Symbol' in col:
+                	symbol_col = col
+                	break
+        
+        	if symbol_col:
+            	    print(f"✅ Loaded S&P 500 symbols from YOUR sp500_symbols.csv")
+            	    # Create a standardized dataframe
                     symbols_df = pd.DataFrame({
-                        'symbol': df[symbol_col].str.upper().tolist(),
-                        'price_range': ['mid'] * len(df)  # Default price range
-                    })
-                    return symbols_df
-                    
-            except Exception as e:
-                continue
-        
-        # If all URLs fail, use fallback
-        st.warning("Using fallback S&P 500 symbol list")
-        return self.get_fallback_symbols()
-        
+                	'symbol': df[symbol_col].str.upper().tolist(),
+                	'price_range': ['mid'] * len(df)  # Default price range
+            })
+            return symbols_df
+        else:
+            raise Exception("No symbol column found in your CSV")
+            
     except Exception as e:
-        st.error(f"Error loading symbols: {str(e)}")
+        print(f"❌ Error loading your CSV: {str(e)}")
+        print("🔄 Using fallback symbols instead")
         return self.get_fallback_symbols()
     
     def start_service(self):
