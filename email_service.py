@@ -22,9 +22,9 @@ warnings.filterwarnings('ignore')
 class CloudEmailService:
     def __init__(self):
         self.config = {
-            'from_email': '',      # UPDATE THIS
-            'to_email': '',         # UPDATE THIS  
-            'password': '',           # UPDATE THIS (Gmail app password)
+            'from_email': 'erndollars@gmail.com',      # UPDATE THIS
+            'to_email': 'accapital22@gmail.com',         # UPDATE THIS  
+            'password': 'ccpg yrqt kbor fuwk',           # UPDATE THIS (Gmail app password)
             'smtp_server': 'smtp.gmail.com',
             'smtp_port': 587,
             'dashboard_url': 'https://stock-screener-cloud-vcmt76mjgjwrvh8pcmexoz.streamlit.app/'  # YOUR ACTUAL URL!
