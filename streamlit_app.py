@@ -38,37 +38,100 @@ class OptimizedScreener:
         self.results = []
     
     def load_sp500_symbols(self):
-        """Load S&P 500 symbols from CSV"""
+        """Load S&P 500 symbols with robust error handling"""
         try:
-            url = "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv"
-            df = pd.read_csv(url)
-            return df
-        except:
-            st.warning("Using fallback symbol list")
-            return pd.DataFrame({
-                'symbol': ['AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 'V'],
-                'price_range': ['high', 'high', 'high', 'high', 'high', 'high', 'high', 'mid', 'mid', 'high']
-            })
+            # Try multiple possible data sources
+            urls = [
+                "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
+                "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv",
+                "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
+            ]
+            
+            for url in urls:
+                try:
+                    df = pd.read_csv(url)
+                    # Check for common column names that might contain symbols
+                    symbol_col = None
+                    for col in df.columns:
+                        if 'symbol' in col.lower() or 'ticker' in col.lower() or 'Symbol' in col:
+                            symbol_col = col
+                            break
+                    
+                    if symbol_col:
+                        st.success(f"✅ Loaded S&P 500 symbols from {url.split('/')[-1]}")
+                        # Create a standardized dataframe
+                        symbols_df = pd.DataFrame({
+                            'symbol': df[symbol_col].str.upper().tolist(),
+                            'price_range': ['mid'] * len(df)  # Default price range
+                        })
+                        return symbols_df
+                        
+                except Exception as e:
+                    continue
+            
+            # If all URLs fail, use fallback
+            st.warning("Using fallback S&P 500 symbol list")
+            return self.get_fallback_symbols()
+            
+        except Exception as e:
+            st.error(f"Error loading symbols: {str(e)}")
+            return self.get_fallback_symbols()
+    
+    def get_fallback_symbols(self):
+        """Provide comprehensive fallback symbol list"""
+        fallback_symbols = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'TSLA', 'NVDA', 'JPM', 'JNJ', 'V',
+            'PG', 'UNH', 'HD', 'DIS', 'PYPL', 'NFLX', 'ADBE', 'CRM', 'INTC', 'CSCO',
+            'PEP', 'T', 'ABT', 'TMO', 'AVGO', 'COST', 'LLY', 'WMT', 'XOM', 'CVX',
+            'MRK', 'PFE', 'ABBV', 'DHR', 'MDT', 'NEE', 'UNP', 'HON', 'RTX', 'LOW',
+            'SPGI', 'ORCL', 'TXN', 'QCOM', 'AMGN', 'UPS', 'SBUX', 'BA', 'CAT', 'DE'
+        ]
+        
+        # Categorize by approximate price ranges
+        price_ranges = {
+            'high': ['AMZN', 'GOOGL', 'META', 'TSLA', 'NVDA', 'LOW', 'SPGI', 'AMGN'],
+            'mid': ['AAPL', 'MSFT', 'JPM', 'JNJ', 'V', 'PG', 'UNH', 'HD', 'DIS', 'PYPL', 
+                   'NFLX', 'ADBE', 'CRM', 'INTC', 'CSCO', 'PEP', 'T', 'ABT', 'TMO', 
+                   'AVGO', 'COST', 'LLY', 'WMT', 'XOM', 'CVX', 'MRK', 'PFE', 'ABBV',
+                   'DHR', 'MDT', 'NEE', 'UNP', 'HON', 'RTX', 'ORCL', 'TXN', 'QCOM',
+                   'UPS', 'SBUX', 'BA', 'CAT', 'DE'],
+            'low': []  # Add any low-priced stocks if needed
+        }
+        
+        symbols_data = []
+        for symbol in fallback_symbols:
+            price_range = 'mid'  # default
+            for range_name, symbols in price_ranges.items():
+                if symbol in symbols:
+                    price_range = range_name
+                    break
+            symbols_data.append({'symbol': symbol, 'price_range': price_range})
+        
+        return pd.DataFrame(symbols_data)
     
     def pre_filter_symbols(self, symbols_df, params):
         """Pre-filter symbols based on price ranges"""
-        price_filtered = []
-        price_ranges = {
-            'low': (0, 30),
-            'mid': (30, 300),  
-            'high': (300, 5000)
-        }
-        
-        for _, row in symbols_df.iterrows():
-            symbol = row['symbol']
-            price_range = row.get('price_range', 'mid')
-            range_min, range_max = price_ranges.get(price_range, (0, 5000))
+        try:
+            price_filtered = []
+            price_ranges = {
+                'low': (0, 30),
+                'mid': (30, 300),  
+                'high': (300, 5000)
+            }
             
-            if (range_max >= params['min_price'] and range_min <= params['max_price']):
-                price_filtered.append(symbol)
-        
-        st.success(f"🎯 Pre-filtering: {len(price_filtered)} stocks likely in price range ${params['min_price']}-${params['max_price']}")
-        return price_filtered
+            for _, row in symbols_df.iterrows():
+                symbol = row['symbol']
+                price_range = row.get('price_range', 'mid')
+                range_min, range_max = price_ranges.get(price_range, (0, 5000))
+                
+                if (range_max >= params['min_price'] and range_min <= params['max_price']):
+                    price_filtered.append(symbol)
+            
+            st.success(f"🎯 Pre-filtering: {len(price_filtered)} stocks likely in price range ${params['min_price']}-${params['max_price']}")
+            return price_filtered
+        except Exception as e:
+            st.error(f"Error in pre-filtering: {str(e)}")
+            return symbols_df['symbol'].tolist()  # Return all symbols if filtering fails
     
     def calculate_ema(self, prices, period=50):
         return prices.ewm(span=period, adjust=False).mean()
@@ -91,7 +154,7 @@ class OptimizedScreener:
             return 0.5
     
     def get_detailed_options_data(self, symbol, current_price, params):
-        """Get detailed options information"""
+        """Get detailed options information with robust error handling"""
         try:
             stock = yf.Ticker(symbol)
             expirations = stock.options
@@ -111,6 +174,11 @@ class OptimizedScreener:
                     
                     options_chain = stock.option_chain(exp_date)
                     calls = options_chain.calls
+                    
+                    # Ensure required columns exist
+                    required_cols = ['lastPrice', 'strike', 'openInterest', 'volume', 'bid', 'ask', 'inTheMoney']
+                    if not all(col in calls.columns for col in required_cols):
+                        continue
                     
                     # Filter calls by our criteria
                     filtered_calls = calls[
@@ -186,7 +254,7 @@ class OptimizedScreener:
             if market_cap < params['min_market_cap']:
                 return None, f"Market cap ${market_cap/1e9:.1f}B below requirement"
             
-            # OPTIONS CHECK - This is the key part that was missing!
+            # OPTIONS CHECK
             options_data = self.get_detailed_options_data(symbol, current_price, params)
             if not options_data['has_valid_options']:
                 return None, "No valid options found"
@@ -199,7 +267,7 @@ class OptimizedScreener:
                 'volume': avg_volume,
                 'market_cap': market_cap,
                 'options_count': options_data['options_count'],
-                'options_details': options_data['details'],  # All option contracts
+                'options_details': options_data['details'],
                 'chart_data': hist[['Close', 'EMA']].tail(30)
             }
             
@@ -210,36 +278,55 @@ class OptimizedScreener:
     
     def run_optimized_screener(self, params):
         """Run optimized screening with pre-filtering"""
-        symbols_df = self.load_sp500_symbols()
-        all_symbols = symbols_df['symbol'].tolist()
-        
-        st.info(f"📊 Loaded {len(all_symbols)} S&P 500 symbols")
-        
-        qualified_symbols = self.pre_filter_symbols(symbols_df, params)
-        
-        if not qualified_symbols:
-            st.error("No stocks passed initial price range filtering")
+        try:
+            symbols_df = self.load_sp500_symbols()
+            
+            # Debug: Show what columns we have
+            st.write(f"📋 Loaded data with columns: {list(symbols_df.columns)}")
+            
+            if 'symbol' not in symbols_df.columns:
+                st.error("❌ 'symbol' column not found in the data. Available columns: " + str(list(symbols_df.columns)))
+                # Try to use first column as symbols
+                first_col = symbols_df.columns[0]
+                symbols_df = symbols_df.rename(columns={first_col: 'symbol'})
+                st.info(f"🔄 Using '{first_col}' as symbol column")
+            
+            all_symbols = symbols_df['symbol'].tolist()
+            st.info(f"📊 Loaded {len(all_symbols)} S&P 500 symbols")
+            
+            qualified_symbols = self.pre_filter_symbols(symbols_df, params)
+            
+            if not qualified_symbols:
+                st.error("No stocks passed initial price range filtering")
+                return []
+            
+            results = []
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            # Limit to first 20 symbols for demo purposes (remove this in production)
+            demo_symbols = qualified_symbols[:20]
+            st.info(f"🔍 Screening first {len(demo_symbols)} symbols for demo (remove limit in production)")
+            
+            for i, symbol in enumerate(demo_symbols):
+                status_text.text(f"🔍 Screening {symbol}...")
+                result, message = self.screen_stock(symbol, params)
+                
+                if result:
+                    results.append(result)
+                    st.success(f"✅ {symbol}: {message} | Options: {result['options_count']}")
+                else:
+                    st.error(f"❌ {symbol}: {message}")
+                
+                progress_bar.progress((i + 1) / len(demo_symbols))
+                time.sleep(0.1)
+            
+            status_text.text("Screening complete!")
+            return results
+            
+        except Exception as e:
+            st.error(f"Error in screening process: {str(e)}")
             return []
-        
-        results = []
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        for i, symbol in enumerate(qualified_symbols):
-            status_text.text(f"🔍 Screening {symbol}...")
-            result, message = self.screen_stock(symbol, params)
-            
-            if result:
-                results.append(result)
-                st.success(f"✅ {symbol}: {message} | Options: {result['options_count']}")
-            else:
-                st.error(f"❌ {symbol}: {message}")
-            
-            progress_bar.progress((i + 1) / len(qualified_symbols))
-            time.sleep(0.1)
-        
-        status_text.text("Screening complete!")
-        return results
 
 def display_options_details(selected_stock):
     """Display detailed options information"""
@@ -420,6 +507,12 @@ def main():
     - **Options criteria**: price, delta, open interest, expiration
     - **Mobile-optimized** cloud deployment
     - **Efficient**: Only screens likely candidates
+    
+    ### 🔧 Fixes Applied:
+    - **Robust symbol loading** with multiple fallback sources
+    - **Better error handling** for missing columns
+    - **Demo mode** with limited symbols for testing
+    - **Debug information** to troubleshoot data issues
     """)
 
 if __name__ == "__main__":
