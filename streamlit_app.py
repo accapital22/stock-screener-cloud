@@ -446,8 +446,8 @@ def main():
         min_volume = st.slider("Min Volume (M)", 1, 10, 2) * 1000000
     
     with st.sidebar.expander("EMA Settings", expanded=True):
-        ema_period = st.selectbox("EMA Period", [20, 50, 200], index=1)
-        ema_threshold = st.slider("EMA Proximity %", 0.5, 5.0, 2.0, 0.1)
+        ema_period = st.selectbox("EMA Period", [33, 50, 198], index=0)
+        ema_threshold = st.slider("EMA Proximity %", 2.5, 10.0, 5.0, 0.5)
     
     with st.sidebar.expander("Market Cap", expanded=True):
         min_market_cap = st.selectbox("Min Market Cap", 
