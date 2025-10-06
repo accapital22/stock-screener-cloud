@@ -703,39 +703,65 @@ def main():
         if results:
             st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
             
-            # Email Report Section
+                        # Email Report Section
             st.markdown("### 📧 Email Report")
             
             # Create PDF report
             pdf_buffer = create_pdf_report(results, params)
             
             if pdf_buffer:
-                col1, col2 = st.columns(2)
-                
-                with col1:
-                    # Download PDF button
-                    st.download_button(
-                        label="📄 Download PDF Report",
-                        data=pdf_buffer,
-                        file_name=f"clarity_screener_report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
-                        mime="application/pdf",
-                        use_container_width=True
-                    )
-                
-                with col2:
-                    # Automatic Email button - BLUE like the screening button
-                    recipient_email = st.text_input(
-                        "Recipient Email", 
-                        value="your-email@example.com",
-                        placeholder="Enter email address to send report"
-                    )
+                # Create a clean card-like layout
+                with st.container():
+                    st.markdown("#### Report Options")
                     
-                    if st.button("📧 Send Email Report", type="secondary", use_container_width=True):
-                        with st.spinner("Sending email..."):
-                            if send_email_with_attachment(pdf_buffer, recipient_email):
-                                st.success(f"✅ Report sent successfully to {recipient_email}!")
-                            else:
-                                st.error("❌ Failed to send email. Please check your email configuration.")
+                    # Main action buttons in a row
+                    action_col1, action_col2, action_col3 = st.columns([2, 3, 2])
+                    
+                    with action_col1:
+                        # Download PDF button
+                        st.download_button(
+                            label="📄 Download PDF",
+                            data=pdf_buffer,
+                            file_name=f"clarity_screener_report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                            mime="application/pdf",
+                            use_container_width=True,
+                            key="download_pdf"
+                        )
+                    
+                    with action_col2:
+                        # Email input
+                        recipient_email = st.text_input(
+                            "Email address to send report:", 
+                            value="your-email@example.com",
+                            placeholder="name@company.com",
+                            key="email_input",
+                            label_visibility="visible"
+                        )
+                    
+                    with action_col3:
+                        st.write("")  # Spacer
+                        st.write("")  # Spacer
+                        # Send Email button - BLUE and prominent
+                        email_sent = st.button(
+                            "📧 Send Email Report", 
+                            type="primary",  # Blue button
+                            use_container_width=True,
+                            key="send_email"
+                        )
+                    
+                    # Handle email sending
+                    if email_sent:
+                        if recipient_email and "@" in recipient_email:
+                            with st.spinner("📤 Sending email report..."):
+                                if send_email_with_attachment(pdf_buffer, recipient_email):
+                                    st.success(f"✅ Report successfully sent to {recipient_email}!")
+                                else:
+                                    st.error("❌ Failed to send email. Please check your email configuration.")
+                        else:
+                            st.warning("⚠️ Please enter a valid email address")
+                
+                # Add some spacing
+                st.markdown("---")
             
             # Extract symbols for TradingView
             passing_symbols = [r['symbol'] for r in results]
@@ -854,3 +880,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
