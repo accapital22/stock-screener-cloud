@@ -8,6 +8,13 @@ import time
 import warnings
 import base64
 from io import BytesIO
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email.mime.text import MIMEText
+from email import encoders
+import tempfile
+import os
 warnings.filterwarnings('ignore')
 
 # Page configuration
@@ -457,16 +464,16 @@ def create_tradingview_watchlist_file(symbols):
     return watchlist_content
 
 def create_pdf_report(results, params):
-    """Create a PDF report of screening results"""
+    """Create a PDF report of screening results in landscape mode"""
     try:
-        from reportlab.lib.pagesizes import letter
+        from reportlab.lib.pagesizes import letter, landscape
         from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
         from reportlab.lib.styles import getSampleStyleSheet
         from reportlab.lib import colors
         from reportlab.lib.units import inch
         
         buffer = BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
         styles = getSampleStyleSheet()
         story = []
         
@@ -480,27 +487,25 @@ def create_pdf_report(results, params):
         story.append(params_text)
         
         param_data = [
-            ['Parameter', 'Value'],
-            ['Price Range', f"${params['min_price']} - ${params['max_price']}"],
-            ['MA Type', params['ma_type']],
-            ['MA Period', params['ma_period']],
-            ['MA Threshold', f"{params['ma_threshold']}%"],
-            ['Min Volume', f"{params['min_volume']:,.0f}"],
-            ['Options Days', f"{params['min_days_to_exp']} - {params['max_days_to_exp']}"],
-            ['Option Price', f"${params['min_option_price']} - ${params['max_option_price']}"],
-            ['Delta Range', f"{params['min_delta']} - {params['max_delta']}"]
+            ['Parameter', 'Value', 'Parameter', 'Value'],
+            ['Price Range', f"${params['min_price']} - ${params['max_price']}", 'MA Type', params['ma_type']],
+            ['MA Period', params['ma_period'], 'MA Threshold', f"{params['ma_threshold']}%"],
+            ['Min Volume', f"{params['min_volume']:,.0f}", 'Market Cap', f"${params['min_market_cap']/1e9:.1f}B+"],
+            ['Options Days', f"{params['min_days_to_exp']} - {params['max_days_to_exp']}", 'Option Price', f"${params['min_option_price']} - ${params['max_option_price']}"],
+            ['Delta Range', f"{params['min_delta']} - {params['max_delta']}", 'Min OI', f"{params['min_open_interest']:,}"]
         ]
         
-        param_table = Table(param_data, colWidths=[2*inch, 3*inch])
+        param_table = Table(param_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 2*inch])
         param_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
             ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
             ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('FONTSIZE', (0, 1), (-1, -1), 9),
         ]))
         story.append(param_table)
         story.append(Spacer(1, 0.3*inch))
@@ -510,32 +515,48 @@ def create_pdf_report(results, params):
         story.append(summary)
         
         if results:
-            # Prepare results data
-            results_data = [['Symbol', 'Price', f"{params['ma_type']} {params['ma_period']}", 'MA Diff %', 'Volume', 'Market Cap', 'Options']]
+            # Prepare detailed results data with options information
+            results_data = [[
+                'Stock', 'Stock_Price', f"{params['ma_type']}_{params['ma_period']}", 
+                'EMA_Diff', 'Option_Strike', 'Option_Price', 'Bid/Ask', 
+                'Open_Interest', 'Delta', 'Expiration', 'Days_to_Exp', 'ITM'
+            ]]
             
             for result in results:
-                results_data.append([
-                    result['symbol'],
-                    f"${result['price']:.2f}",
-                    f"${result['ma']:.2f}",
-                    f"{result['ma_diff_percent']:+.2f}%",
-                    f"{result['volume']:,.0f}",
-                    f"${result['market_cap']/1e9:.1f}B",
-                    result['options_count']
-                ])
+                # Get the first valid option for each stock
+                if result['options_details']:
+                    option = result['options_details'][0]  # Take first option
+                    results_data.append([
+                        result['symbol'],
+                        f"${result['price']:.2f}",
+                        f"${result['ma']:.2f}",
+                        f"{result['ma_diff_percent']:+.2f}%",
+                        f"${option['strike']}",
+                        f"${option['option_price']:.2f}",
+                        f"${option['bid']:.2f}/${option['ask']:.2f}",
+                        f"{option['open_interest']:,}",
+                        f"{option['delta']:.2f}",
+                        option['expiration'],
+                        str(option['days_to_exp']),
+                        'Yes' if option['in_the_money'] else 'No'
+                    ])
             
-            results_table = Table(results_data, colWidths=[0.7*inch, 0.7*inch, 1*inch, 0.8*inch, 1*inch, 1*inch, 0.7*inch])
+            # Create table with appropriate column widths for landscape
+            col_widths = [0.6*inch, 0.8*inch, 1.0*inch, 0.7*inch, 0.8*inch, 
+                         0.8*inch, 1.0*inch, 0.9*inch, 0.5*inch, 1.0*inch, 0.7*inch, 0.5*inch]
+            
+            results_table = Table(results_data, colWidths=col_widths)
             results_table.setStyle(TableStyle([
                 ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
                 ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                 ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('FONTSIZE', (0, 0), (-1, 0), 8),
                 ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
                 ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
                 ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('FONTSIZE', (0, 1), (-1, -1), 8),
-                ('ROWBREAK', (0, 15), (-1, -1), 'AFTER'),  # Page break after 15 rows
+                ('FONTSIZE', (0, 1), (-1, -1), 7),
+                ('ROWBREAK', (0, 20), (-1, -1), 'AFTER'),
             ]))
             story.append(results_table)
         
@@ -551,6 +572,58 @@ def create_pdf_report(results, params):
     except Exception as e:
         st.error(f"Error creating PDF: {str(e)}")
         return None
+
+def send_email_with_attachment(pdf_buffer, recipient_email="accapital22@gmail.com"):
+    """Send email with PDF attachment"""
+    try:
+        # Email configuration - UPDATE THESE WITH YOUR EMAIL CREDENTIALS
+        smtp_server = "smtp.gmail.com"  # For Gmail, adjust for other providers
+        smtp_port = 587
+        sender_email = "erndollars@gmail.com"  # UPDATE THIS
+        sender_password = "ccpg yrqt kbor fuwk"  # UPDATE THIS (use app password for Gmail)
+        
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = sender_email
+        msg['To'] = recipient_email
+        msg['Subject'] = f"Clarity Screener Pro Report - {datetime.now().strftime('%Y-%m-%d')}"
+        
+        # Email body
+        body = f"""
+        Clarity Screener Pro 9.0 Screening Report
+        
+        Report generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+        
+        This report contains the latest screening results from Clarity Screener Pro.
+        
+        Best regards,
+        Clarity Screener Pro Team
+        """
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # Attach PDF
+        pdf_attachment = MIMEBase('application', 'octet-stream')
+        pdf_attachment.set_payload(pdf_buffer.getvalue())
+        encoders.encode_base64(pdf_attachment)
+        pdf_attachment.add_header(
+            'Content-Disposition',
+            f'attachment; filename=clarity_screener_report_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf'
+        )
+        msg.attach(pdf_attachment)
+        
+        # Send email
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        text = msg.as_string()
+        server.sendmail(sender_email, recipient_email, text)
+        server.quit()
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"Error sending email: {str(e)}")
+        return False
 
 def main():
     st.markdown('<h1 class="main-header">📈 Clarity Screener Pro 9.0</h1>', unsafe_allow_html=True)
@@ -579,7 +652,7 @@ def main():
                               index=0,
                               help="EMA: Exponential Moving Average (recent prices weighted more)\nSMA: Simple Moving Average (equal weight)\nWMA: Weighted Moving Average (linear weights)")
         
-        ma_period = st.selectbox("MA Period", [33, 50, 198], index=0)  # Updated default periods
+        ma_period = st.selectbox("MA Period", [33, 50, 198], index=0)
         ma_threshold = st.slider("MA Proximity %", 2.5, 10.0, 5.0, 0.5)
     
     with st.sidebar.expander("Market Cap", expanded=True):
@@ -630,13 +703,17 @@ def main():
         if results:
             st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
             
-            # Email Report Button
+            # Email Report Section
             st.markdown("### 📧 Email Report")
-            col1, col2 = st.columns([1, 3])
-            with col1:
-                # Create PDF report
-                pdf_buffer = create_pdf_report(results, params)
-                if pdf_buffer:
+            
+            # Create PDF report
+            pdf_buffer = create_pdf_report(results, params)
+            
+            if pdf_buffer:
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Download PDF button
                     st.download_button(
                         label="📄 Download PDF Report",
                         data=pdf_buffer,
@@ -644,9 +721,21 @@ def main():
                         mime="application/pdf",
                         use_container_width=True
                     )
-            
-            with col2:
-                st.info("💡 Download the PDF report and attach it to your email. The report contains all screening results and parameters.")
+                
+                with col2:
+                    # Automatic Email button - BLUE like the screening button
+                    recipient_email = st.text_input(
+                        "Recipient Email", 
+                        value="your-email@example.com",
+                        placeholder="Enter email address to send report"
+                    )
+                    
+                    if st.button("📧 Send Email Report", type="secondary", use_container_width=True):
+                        with st.spinner("Sending email..."):
+                            if send_email_with_attachment(pdf_buffer, recipient_email):
+                                st.success(f"✅ Report sent successfully to {recipient_email}!")
+                            else:
+                                st.error("❌ Failed to send email. Please check your email configuration.")
             
             # Extract symbols for TradingView
             passing_symbols = [r['symbol'] for r in results]
@@ -690,7 +779,7 @@ def main():
             
             with col3:
                 # Multi-chart link
-                multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])  # Limit to 8 for multi-chart
+                multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
                 if multi_chart_url:
                     st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
                     st.caption("Opens first 8 symbols in TradingView multi-chart")
@@ -705,11 +794,11 @@ def main():
             # Detailed analysis section
             st.markdown("### 📊 Detailed Analysis")
             
-            # Let user select a stock for detailed view - THIS IS NOW STATE-FUL
+            # Let user select a stock for detailed view
             selected_symbol = st.selectbox(
                 "Select stock for detailed analysis", 
                 [r['symbol'] for r in results],
-                key="stock_selector"  # Important: Add a key to make this widget stateful
+                key="stock_selector"
             )
             
             if selected_symbol:
@@ -747,24 +836,21 @@ def main():
     
     st.markdown("---")
 
-try:
-    from PIL import Image
-    
-    # Load image
-    image = Image.open('images/Call_Long_Bulls_Logo.png')
-    
-    # Center the image using columns
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col2:
-        st.image(image, width=300)
+    try:
+        from PIL import Image
         
-except FileNotFoundError:
-    st.warning("⚠️ Logo image not found. Please check the file path.")
-except Exception as e:
-    st.warning(f"⚠️ Could not load image: {e}")
+        # Load image
+        image = Image.open('images/Call_Long_Bulls_Logo.png')
+        
+        # Center the image using columns
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            st.image(image, width=300)
+            
+    except FileNotFoundError:
+        st.warning("⚠️ Logo image not found. Please check the file path.")
+    except Exception as e:
+        st.warning(f"⚠️ Could not load image: {e}")
 
 if __name__ == "__main__":
     main()
-
-
-
