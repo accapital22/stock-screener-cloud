@@ -746,13 +746,17 @@ def main():
             st.warning("No stocks passed all screening criteria with valid options")
     
     st.markdown("---")
-    
+
+try:
     from PIL import Image
-    
     # Load and display image
     image = Image.open('images/Call_Long_Bulls_Logo.png')
     st.image(image, width=300)
-  
+except FileNotFoundError:
+    st.warning("⚠️ Logo image not found. Please check the file path.")
+except Exception as e:
+    st.warning(f"⚠️ Could not load image: {e}")
 
 if __name__ == "__main__":
     main()
+
