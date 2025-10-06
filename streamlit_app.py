@@ -749,17 +749,14 @@ def main():
 
 try:
     from PIL import Image
-    # Load and display image - CENTERED
+    
+    # Load image
     image = Image.open('images/Call_Long_Bulls_Logo.png')
     
-    # Center the image using container
-    with st.container():
-        st.markdown(
-            f'<div style="display: flex; justify-content: center;">'
-            f'<img src="data:image/png;base64,{image_to_base64(image)}" width="300">'
-            f'</div>',
-            unsafe_allow_html=True
-        )
+    # Center the image using columns
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        st.image(image, width=300)
         
 except FileNotFoundError:
     st.warning("⚠️ Logo image not found. Please check the file path.")
@@ -768,5 +765,6 @@ except Exception as e:
 
 if __name__ == "__main__":
     main()
+
 
 
