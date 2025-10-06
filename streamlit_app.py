@@ -229,7 +229,7 @@ class OptimizedScreener:
         """Screen individual stock with options data"""
         try:
             stock = yf.Ticker(symbol)
-            hist = stock.history(period="3mo")
+            hist = stock.history(period="1y", interval="1d")
             
             if len(hist) < params['ema_period']:
                 return None, "Insufficient data for EMA"
