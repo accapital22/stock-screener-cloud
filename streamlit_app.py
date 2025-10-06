@@ -6,11 +6,13 @@ import plotly.graph_objects as go
 from datetime import datetime, timedelta
 import time
 import warnings
+import base64
+from io import BytesIO
 warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
-    page_title="Stock Screener Pro - Cloud",
+    page_title="Clarity Screener Pro 9.0",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -43,7 +45,7 @@ class OptimizedScreener:
             # Try multiple possible data sources
             urls = [
                 "https://raw.githubusercontent.com/accapital22/stock-screener-cloud/main/sp500_symbols.csv",
-		"https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
+                "https://raw.githubusercontent.com/datasets/s-and-p-500-companies/main/data/constituents.csv",
                 "https://datahub.io/core/s-and-p-500-companies/r/constituents.csv"
             ]
             
@@ -134,7 +136,31 @@ class OptimizedScreener:
             return symbols_df['symbol'].tolist()  # Return all symbols if filtering fails
     
     def calculate_ema(self, prices, period=50):
+        """Calculate Exponential Moving Average"""
         return prices.ewm(span=period, adjust=False).mean()
+    
+    def calculate_sma(self, prices, period=50):
+        """Calculate Simple Moving Average"""
+        return prices.rolling(window=period).mean()
+    
+    def calculate_wma(self, prices, period=50):
+        """Calculate Weighted Moving Average"""
+        def wma_calc(x):
+            weights = np.arange(1, len(x) + 1)
+            return np.dot(x, weights) / weights.sum()
+        
+        return prices.rolling(window=period).apply(wma_calc, raw=True)
+    
+    def calculate_moving_average(self, prices, ma_type, period):
+        """Calculate moving average based on type"""
+        if ma_type == "EMA":
+            return self.calculate_ema(prices, period)
+        elif ma_type == "SMA":
+            return self.calculate_sma(prices, period)
+        elif ma_type == "WMA":
+            return self.calculate_wma(prices, period)
+        else:
+            return self.calculate_ema(prices, period)  # Default to EMA
     
     def estimate_delta(self, stock_price, strike_price, days_to_expiry, option_type='call'):
         """Estimate option delta"""
@@ -229,10 +255,10 @@ class OptimizedScreener:
         """Screen individual stock with options data"""
         try:
             stock = yf.Ticker(symbol)
-            hist = stock.history(period="1y", interval="1d")
+            hist = stock.history(period="1y", interval="1d")  # 1 year history
             
-            if len(hist) < params['ema_period']:
-                return None, "Insufficient data for EMA"
+            if len(hist) < params['ma_period']:
+                return None, "Insufficient data for moving average"
             
             current_price = hist['Close'].iloc[-1]
             if not (params['min_price'] <= current_price <= params['max_price']):
@@ -242,12 +268,16 @@ class OptimizedScreener:
             if avg_volume < params['min_volume']:
                 return None, f"Volume {avg_volume:,.0f} below requirement"
             
-            hist['EMA'] = self.calculate_ema(hist['Close'], params['ema_period'])
-            current_ema = hist['EMA'].iloc[-1]
-            ema_diff_percent = ((current_price - current_ema) / current_ema) * 100
+            # Calculate selected moving average
+            ma_type = params['ma_type']
+            ma_period = params['ma_period']
             
-            if abs(ema_diff_percent) > params['ema_threshold']:
-                return None, f"EMA diff {ema_diff_percent:.2f}% > threshold"
+            hist['MA'] = self.calculate_moving_average(hist['Close'], ma_type, ma_period)
+            current_ma = hist['MA'].iloc[-1]
+            ma_diff_percent = ((current_price - current_ma) / current_ma) * 100
+            
+            if abs(ma_diff_percent) > params['ma_threshold']:
+                return None, f"{ma_type} diff {ma_diff_percent:.2f}% > threshold"
             
             info = stock.info
             market_cap = info.get('marketCap', 0)
@@ -262,13 +292,15 @@ class OptimizedScreener:
             stock_data = {
                 'symbol': symbol,
                 'price': current_price,
-                'ema': current_ema,
-                'ema_diff_percent': ema_diff_percent,
+                'ma': current_ma,
+                'ma_type': ma_type,
+                'ma_period': ma_period,
+                'ma_diff_percent': ma_diff_percent,
                 'volume': avg_volume,
                 'market_cap': market_cap,
                 'options_count': options_data['options_count'],
                 'options_details': options_data['details'],
-                'chart_data': hist[['Close', 'EMA']].tail(30)
+                'chart_data': hist[['Close', 'MA']].tail(30)
             }
             
             return stock_data, "PASS"
@@ -424,9 +456,105 @@ def create_tradingview_watchlist_file(symbols):
     
     return watchlist_content
 
+def create_pdf_report(results, params):
+    """Create a PDF report of screening results"""
+    try:
+        from reportlab.lib.pagesizes import letter
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Title
+        title = Paragraph(f"Clarity Screener Pro 9.0 - Screening Report", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Screening Parameters
+        params_text = Paragraph(f"Screening Parameters:", styles['Heading2'])
+        story.append(params_text)
+        
+        param_data = [
+            ['Parameter', 'Value'],
+            ['Price Range', f"${params['min_price']} - ${params['max_price']}"],
+            ['MA Type', params['ma_type']],
+            ['MA Period', params['ma_period']],
+            ['MA Threshold', f"{params['ma_threshold']}%"],
+            ['Min Volume', f"{params['min_volume']:,.0f}"],
+            ['Options Days', f"{params['min_days_to_exp']} - {params['max_days_to_exp']}"],
+            ['Option Price', f"${params['min_option_price']} - ${params['max_option_price']}"],
+            ['Delta Range', f"{params['min_delta']} - {params['max_delta']}"]
+        ]
+        
+        param_table = Table(param_data, colWidths=[2*inch, 3*inch])
+        param_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 12),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black)
+        ]))
+        story.append(param_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Results Summary
+        summary = Paragraph(f"Results Summary: {len(results)} Stocks Found", styles['Heading2'])
+        story.append(summary)
+        
+        if results:
+            # Prepare results data
+            results_data = [['Symbol', 'Price', f"{params['ma_type']} {params['ma_period']}", 'MA Diff %', 'Volume', 'Market Cap', 'Options']]
+            
+            for result in results:
+                results_data.append([
+                    result['symbol'],
+                    f"${result['price']:.2f}",
+                    f"${result['ma']:.2f}",
+                    f"{result['ma_diff_percent']:+.2f}%",
+                    f"{result['volume']:,.0f}",
+                    f"${result['market_cap']/1e9:.1f}B",
+                    result['options_count']
+                ])
+            
+            results_table = Table(results_data, colWidths=[0.7*inch, 0.7*inch, 1*inch, 0.8*inch, 1*inch, 1*inch, 0.7*inch])
+            results_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+                ('ROWBREAK', (0, 15), (-1, -1), 'AFTER'),  # Page break after 15 rows
+            ]))
+            story.append(results_table)
+        
+        # Footer
+        story.append(Spacer(1, 0.2*inch))
+        footer = Paragraph(f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal'])
+        story.append(footer)
+        
+        doc.build(story)
+        buffer.seek(0)
+        return buffer
+        
+    except Exception as e:
+        st.error(f"Error creating PDF: {str(e)}")
+        return None
+
 def main():
-    st.markdown('<h1 class="main-header">📈 Stock Screener Pro - Complete</h1>', unsafe_allow_html=True)
-    st.markdown("### Full S&P 500 Screening with Options Data")
+    st.markdown('<h1 class="main-header">📈 Clarity Screener Pro 9.0</h1>', unsafe_allow_html=True)
+    st.markdown("### Advanced S&P 500 Screening with Options Data")
     
     # Initialize session state to preserve results
     if 'screening_results' not in st.session_state:
@@ -445,9 +573,14 @@ def main():
         max_price = st.slider("Max Price", 50, 500, 300)
         min_volume = st.slider("Min Volume (M)", 1, 10, 2) * 1000000
     
-    with st.sidebar.expander("EMA Settings", expanded=True):
-        ema_period = st.selectbox("EMA Period", [33, 50, 198], index=0)
-        ema_threshold = st.slider("EMA Proximity %", 2.5, 10.0, 5.0, 0.5)
+    with st.sidebar.expander("Moving Average Settings", expanded=True):
+        ma_type = st.selectbox("Moving Average Type", 
+                              ["EMA", "SMA", "WMA"], 
+                              index=0,
+                              help="EMA: Exponential Moving Average (recent prices weighted more)\nSMA: Simple Moving Average (equal weight)\nWMA: Weighted Moving Average (linear weights)")
+        
+        ma_period = st.selectbox("MA Period", [33, 50, 198], index=0)  # Updated default periods
+        ma_threshold = st.slider("MA Proximity %", 2.5, 10.0, 5.0, 0.5)
     
     with st.sidebar.expander("Market Cap", expanded=True):
         min_market_cap = st.selectbox("Min Market Cap", 
@@ -467,8 +600,9 @@ def main():
         'min_price': min_price,
         'max_price': max_price,
         'min_volume': min_volume,
-        'ema_period': ema_period,
-        'ema_threshold': ema_threshold,
+        'ma_type': ma_type,
+        'ma_period': ma_period,
+        'ma_threshold': ma_threshold,
         'min_market_cap': min_market_cap,
         'min_days_to_exp': min_days_to_exp,
         'max_days_to_exp': max_days_to_exp,
@@ -496,6 +630,24 @@ def main():
         if results:
             st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
             
+            # Email Report Button
+            st.markdown("### 📧 Email Report")
+            col1, col2 = st.columns([1, 3])
+            with col1:
+                # Create PDF report
+                pdf_buffer = create_pdf_report(results, params)
+                if pdf_buffer:
+                    st.download_button(
+                        label="📄 Download PDF Report",
+                        data=pdf_buffer,
+                        file_name=f"clarity_screener_report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
+            
+            with col2:
+                st.info("💡 Download the PDF report and attach it to your email. The report contains all screening results and parameters.")
+            
             # Extract symbols for TradingView
             passing_symbols = [r['symbol'] for r in results]
             
@@ -503,8 +655,8 @@ def main():
             results_df = pd.DataFrame([{
                 'Symbol': r['symbol'],
                 'Price': f"${r['price']:.2f}",
-                f'EMA_{params["ema_period"]}': f"${r['ema']:.2f}",
-                'EMA Diff': f"{r['ema_diff_percent']:+.2f}%",
+                f'{r["ma_type"]}_{r["ma_period"]}': f"${r['ma']:.2f}",
+                'MA Diff': f"{r['ma_diff_percent']:+.2f}%",
                 'Volume': f"{r['volume']:,.0f}",
                 'Market Cap': f"${r['market_cap']/1e9:.1f}B",
                 'Options Found': r['options_count']
@@ -538,10 +690,10 @@ def main():
             
             with col3:
                 # Multi-chart link
-                multi_chart_url = create_tradingview_multichart_url(passing_symbols[:4])  # Limit to 4 for multi-chart
+                multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])  # Limit to 8 for multi-chart
                 if multi_chart_url:
                     st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
-                    st.caption("Opens first 4 symbols in TradingView multi-chart")
+                    st.caption("Opens first 8 symbols in TradingView multi-chart")
             
             st.markdown("""
             **How to import into TradingView:**
@@ -577,8 +729,8 @@ def main():
                     ))
                     fig.add_trace(go.Scatter(
                         x=selected_stock['chart_data'].index,
-                        y=selected_stock['chart_data']['EMA'],
-                        name=f'EMA {params["ema_period"]}',
+                        y=selected_stock['chart_data']['MA'],
+                        name=f'{selected_stock["ma_type"]} {selected_stock["ma_period"]}',
                         line=dict(color='#ff7f0e', width=2, dash='dash')
                     ))
                     fig.update_layout(
@@ -594,21 +746,13 @@ def main():
             st.warning("No stocks passed all screening criteria with valid options")
     
     st.markdown("---")
-    st.markdown("""
-    ### 🚀 Complete Features:
-    - **Full S&P 500** screening with pre-filtering
-    - **Detailed options chain** analysis
-    - **Options criteria**: price, delta, open interest, expiration
-    - **TradingView integration** for easy watchlist creation
-    - **State persistence** - results don't reset when selecting symbols
-    - **Mobile-optimized** cloud deployment
-    - **Efficient**: Only screens likely candidates
     
-    ### 🔧 State Fix Applied:
-    - **Session state** preserves screening results between interactions
-    - **Widget keys** prevent reset when selecting different symbols
-    - **Persistent data** allows you to explore results without re-screening
-    """)
+    from PIL import Image
+    
+    # Load and display image
+    image = Image.open('images/Call_Long_Bulls_Logo.png')
+    st.image(image, width=300)
+  
 
 if __name__ == "__main__":
     main()
