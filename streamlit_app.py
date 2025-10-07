@@ -463,6 +463,24 @@ def create_tradingview_watchlist_file(symbols):
     
     return watchlist_content
 
+def get_bank_color(ma_type):
+    """Get color for Bank Type"""
+    colors = {
+        "GLOBAL": "#ffa726",  # Orange
+        "NATIONAL": "#fb0707",  # Red
+        "REGIONAL": "#01f90b"   # Green
+    }
+    return colors.get(ma_type, "#ff7f0e")  # Default orange
+
+def get_bank_name(ma_period):
+    """Get Bank name for period"""
+    bank_names = {
+        33: "JP Morgan",
+        50: "Barclays", 
+        198: "BlackRock"
+    }
+    return bank_names.get(ma_period, f"Bank {ma_period}")
+
 def sort_results_for_pdf(results):
     """Sort results for PDF report with the specified hierarchy"""
     if not results:
@@ -572,9 +590,9 @@ def create_pdf_report(results, params):
                 
                 current_delta = None
                 for i, result in enumerate(sorted_results):
-                    # Add blank row when delta changes
+                    # Add blank row when delta changes (with dark grey background)
                     if current_delta is not None and result['delta'] != current_delta:
-                        results_data.append([''] * 12)  # Blank row
+                        results_data.append([''] * 12)  # Blank row for separation
                     
                     current_delta = result['delta']
                     
@@ -598,7 +616,9 @@ def create_pdf_report(results, params):
                              0.5*inch, 0.8*inch, 0.9*inch, 0.9*inch, 0.6*inch, 0.4*inch, 0.6*inch]
                 
                 results_table = Table(results_data, colWidths=col_widths)
-                results_table.setStyle(TableStyle([
+                
+                # Create table style with dark grey separator rows
+                table_style = [
                     ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
                     ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
                     ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
@@ -609,7 +629,14 @@ def create_pdf_report(results, params):
                     ('GRID', (0, 0), (-1, -1), 1, colors.black),
                     ('FONTSIZE', (0, 1), (-1, -1), 6),
                     ('ROWBREAK', (0, 25), (-1, -1), 'AFTER'),
-                ]))
+                ]
+                
+                # Add dark grey background for separator rows
+                for i, row in enumerate(results_data):
+                    if all(cell == '' for cell in row):  # This is a separator row
+                        table_style.append(('BACKGROUND', (0, i), (-1, i), colors.darkgrey))
+                
+                results_table.setStyle(TableStyle(table_style))
                 story.append(results_table)
         
         # Footer
@@ -847,9 +874,9 @@ def main():
             else:
                 passing_symbols = [r['symbol'] for r in results]
             
-            # Results table for dashboard - Apply same sorting logic
+            # Results table for dashboard - Apply same sorting logic and column order
             if sorted_for_dashboard:
-                # Create dashboard results with same sorting
+                # Create dashboard results with same sorting and proper column order
                 dashboard_data = []
                 seen_symbols = set()
                 for result in sorted_for_dashboard:
@@ -857,15 +884,18 @@ def main():
                         # Find the original stock data
                         stock_data = next(r for r in results if r['symbol'] == result['symbol'])
                         dashboard_data.append({
-                            'Symbol': result['symbol'],
-                            'Price': f"${result['stock_price']:.2f}",
-                            f'{params["ma_type"]}': f"${result['bank_price']:.2f}",
-                            'Bank Diff': f"{result['bank_diff_percent']:+.2f}%",
-                            'Volume': f"{stock_data['volume']:,.0f}",
-                            'Market Cap': f"${stock_data['market_cap']/1e9:.1f}B",
-                            'Options Found': stock_data['options_count'],
+                            'Stock': result['symbol'],
+                            'Stock_Price': f"${result['stock_price']:.2f}",
+                            'Bank_Price': f"${result['bank_price']:.2f}",
+                            'Option_Strike': f"${result['option_strike']}",
+                            'Option_Price': f"${result['option_price']:.2f}",
                             'Delta': f"{result['delta']:.2f}",
-                            'Option Price': f"${result['option_price']:.2f}"
+                            'Open_Interest': f"{result['open_interest']:,}",
+                            'Bid/Ask': f"${result['bid']:.2f}/${result['ask']:.2f}",
+                            'Expiration': result['expiration'],
+                            'Days_To_Exp': str(result['days_to_exp']),
+                            'ITM': 'Yes' if result['itm'] else 'No',
+                            'Bank_Diff': f"{result['bank_diff_percent']:+.2f}%"
                         })
                         seen_symbols.add(result['symbol'])
                 
@@ -873,13 +903,11 @@ def main():
             else:
                 # Fallback if no sorted results
                 results_df = pd.DataFrame([{
-                    'Symbol': r['symbol'],
-                    'Price': f"${r['price']:.2f}",
-                    f'{r["ma_type"]}': f"${r['ma']:.2f}",
-                    'Bank Diff': f"{r['ma_diff_percent']:+.2f}%",
-                    'Volume': f"{r['volume']:,.0f}",
-                    'Market Cap': f"${r['market_cap']/1e9:.1f}B",
-                    'Options Found': r['options_count']
+                    'Stock': r['symbol'],
+                    'Stock_Price': f"${r['price']:.2f}",
+                    'Bank_Price': f"${r['ma']:.2f}",
+                    'Bank_Diff': f"{r['ma_diff_percent']:+.2f}%",
+                    'Options_Found': r['options_count']
                 } for r in results])
             
             st.dataframe(results_df, use_container_width=True)
@@ -939,7 +967,7 @@ def main():
                 tab1, tab2 = st.tabs(["📈 Price Chart", "📊 Options Details"])
                 
                 with tab1:
-                    # Create price chart
+                    # Create price chart with color-coded Bank Type
                     fig = go.Figure()
                     fig.add_trace(go.Scatter(
                         x=selected_stock['chart_data'].index,
@@ -947,11 +975,16 @@ def main():
                         name='Close Price',
                         line=dict(color='#1f77b4', width=2)
                     ))
+                    
+                    # Get Bank color and name for the legend
+                    bank_color = get_bank_color(selected_stock['ma_type'])
+                    bank_name = get_bank_name(selected_stock['ma_period'])
+                    
                     fig.add_trace(go.Scatter(
                         x=selected_stock['chart_data'].index,
                         y=selected_stock['chart_data']['MA'],
-                        name=f'{selected_stock["ma_type"]} {selected_stock["ma_period"]}',
-                        line=dict(color='#ff7f0e', width=2, dash='dash')
+                        name=f'{bank_name}',
+                        line=dict(color=bank_color, width=2, dash='dash')
                     ))
                     fig.update_layout(
                         title=f"{selected_symbol} Price Chart (Last 30 Days)",
