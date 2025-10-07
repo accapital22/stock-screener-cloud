@@ -472,6 +472,13 @@ def create_pdf_report(results, params):
         from reportlab.lib import colors
         from reportlab.lib.units import inch
         
+        # Add bank options mapping
+        bank_options = {
+            33: "JP Morgan",
+            50: "Barclays", 
+            198: "BlackRock"
+        }
+        
         buffer = BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
         styles = getSampleStyleSheet()
@@ -489,7 +496,7 @@ def create_pdf_report(results, params):
         param_data = [
             ['Parameter', 'Value', 'Parameter', 'Value'],
             ['Price Range', f"${params['min_price']} - ${params['max_price']}", 'Bank Type', params['ma_type']],
-            ['Banks', params['ma_period'], 'Bank Threshold', f"{params['ma_threshold']}%"],
+            ['Banks', bank_options.get(params['ma_period'], params['ma_period']), 'Bank Threshold', f"{params['ma_threshold']}%"],
             ['Min Volume', f"{params['min_volume']:,.0f}", 'Market Cap', f"${params['min_market_cap']/1e9:.1f}B+"],
             ['Options Days', f"{params['min_days_to_exp']} - {params['max_days_to_exp']}", 'Option Price', f"${params['min_option_price']} - ${params['max_option_price']}"],
             ['Delta Range', f"{params['min_delta']} - {params['max_delta']}", 'Min OI', f"{params['min_open_interest']:,}"]
@@ -653,13 +660,6 @@ def main():
                               help="REGIONAL: Exponential Moving Average (recent prices weighted more)\nNATIONAL: Weighted Moving Average (linear weights)\nGLOBAL: Simple Moving Average (equal weight)")
         
         # Create mapping for display names (show only bank names, but use numbers in code)
-        bank_options = {
-            33: "JP Morgan",
-            50: "Barclays", 
-            198: "BlackRock"
-        }
-        
-        # Create reverse mapping for display to code conversion
         bank_display_to_code = {
             "JP Morgan": 33,
             "Barclays": 50,
