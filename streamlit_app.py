@@ -573,8 +573,8 @@ def create_pdf_report(results, params):
         st.error(f"Error creating PDF: {str(e)}")
         return None
 
-def send_email_with_attachment(pdf_buffer, recipient_email="accapital22@gmail.com"):
-    """Send email with PDF attachment"""
+def send_email_with_attachment(pdf_buffer, recipient_emails):
+    """Send email with PDF attachment to multiple recipients"""
     try:
         # Email configuration - UPDATE THESE WITH YOUR EMAIL CREDENTIALS
         smtp_server = "smtp.gmail.com"  # For Gmail, adjust for other providers
@@ -585,7 +585,7 @@ def send_email_with_attachment(pdf_buffer, recipient_email="accapital22@gmail.co
         # Create message
         msg = MIMEMultipart()
         msg['From'] = sender_email
-        msg['To'] = recipient_email
+        msg['To'] = ", ".join(recipient_emails)  # Join multiple recipients
         msg['Subject'] = f"Clarity Screener Pro Report - {datetime.now().strftime('%Y-%m-%d')}"
         
         # Email body
@@ -616,7 +616,7 @@ def send_email_with_attachment(pdf_buffer, recipient_email="accapital22@gmail.co
         server.starttls()
         server.login(sender_email, sender_password)
         text = msg.as_string()
-        server.sendmail(sender_email, recipient_email, text)
+        server.sendmail(sender_email, recipient_emails, text)
         server.quit()
         
         return True
@@ -652,16 +652,22 @@ def main():
                               index=0,
                               help="REGIONAL: Exponential Moving Average (recent prices weighted more)\nNATIONAL: Weighted Moving Average (linear weights)\nGLOBAL: Simple Moving Average (equal weight)")
         
-        # Create mapping for display names
+        # Create mapping for display names (show only bank names, but use numbers in code)
         bank_options = {
-            33: "33 (JP Morgan)",
-            50: "50 (Barclays)", 
-            198: "198 (BlackRock)"
+            33: "JP Morgan",
+            50: "Barclays", 
+            198: "BlackRock"
         }
         
-        ma_period = st.selectbox("Banks", [33, 50, 198], 
-                                format_func=lambda x: bank_options[x],
-                                index=0)
+        # Create reverse mapping for display to code conversion
+        bank_display_to_code = {
+            "JP Morgan": 33,
+            "Barclays": 50,
+            "BlackRock": 198
+        }
+        
+        bank_display = st.selectbox("Banks", ["JP Morgan", "Barclays", "BlackRock"], index=0)
+        ma_period = bank_display_to_code[bank_display]
         ma_threshold = st.slider("Bank Proximity %", 2.5, 10.0, 5.0, 0.5)
     
     with st.sidebar.expander("Market Cap", expanded=True):
@@ -712,7 +718,7 @@ def main():
         if results:
             st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
             
-                        # Email Report Section
+            # Email Report Section
             st.markdown("### 📧 Email Report")
             
             # Create PDF report
@@ -738,13 +744,14 @@ def main():
                         )
                     
                     with action_col2:
-                        # Email input
+                        # Email input - show placeholder but always send to accapital22@gmail.com
                         recipient_email = st.text_input(
                             "Email address to send report:", 
                             value="your-email@example.com",
                             placeholder="name@company.com",
                             key="email_input",
-                            label_visibility="visible"
+                            label_visibility="visible",
+                            help="Report will always be sent to our team. Add your email to also receive a copy."
                         )
                     
                     with action_col3:
@@ -760,14 +767,24 @@ def main():
                     
                     # Handle email sending
                     if email_sent:
-                        if recipient_email and "@" in recipient_email:
-                            with st.spinner("📤 Sending email report..."):
-                                if send_email_with_attachment(pdf_buffer, recipient_email):
-                                    st.success(f"✅ Report successfully sent to {recipient_email}!")
-                                else:
-                                    st.error("❌ Failed to send email. Please check your email configuration.")
+                        # Always send to accapital22@gmail.com
+                        default_recipient = "accapital22@gmail.com"
+                        recipients = [default_recipient]
+                        
+                        # Check if user provided a valid additional email
+                        user_email = recipient_email.strip()
+                        if user_email and user_email != "your-email@example.com" and "@" in user_email:
+                            recipients.append(user_email)
+                            display_email = user_email
+                            success_message = f"✅ Report successfully sent to {display_email}!"
                         else:
-                            st.warning("⚠️ Please enter a valid email address")
+                            success_message = "✅ Report successfully sent!"
+                        
+                        with st.spinner("📤 Sending email report..."):
+                            if send_email_with_attachment(pdf_buffer, recipients):
+                                st.success(success_message)
+                            else:
+                                st.error("❌ Failed to send email. Please check your email configuration.")
                 
                 # Add some spacing
                 st.markdown("---")
