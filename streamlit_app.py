@@ -160,11 +160,11 @@ class OptimizedScreener:
     
     def calculate_moving_average(self, prices, ma_type, period):
         """Calculate moving average based on type"""
-        if ma_type == "EMA":
+        if ma_type == "REGIONAL":
             return self.calculate_ema(prices, period)
-        elif ma_type == "SMA":
+        elif ma_type == "GLOBAL":
             return self.calculate_sma(prices, period)
-        elif ma_type == "WMA":
+        elif ma_type == "NATIONAL":
             return self.calculate_wma(prices, period)
         else:
             return self.calculate_ema(prices, period)  # Default to EMA
@@ -488,8 +488,8 @@ def create_pdf_report(results, params):
         
         param_data = [
             ['Parameter', 'Value', 'Parameter', 'Value'],
-            ['Price Range', f"${params['min_price']} - ${params['max_price']}", 'MA Type', params['ma_type']],
-            ['MA Period', params['ma_period'], 'MA Threshold', f"{params['ma_threshold']}%"],
+            ['Price Range', f"${params['min_price']} - ${params['max_price']}", 'Bank Type', params['ma_type']],
+            ['Banks', params['ma_period'], 'Bank Threshold', f"{params['ma_threshold']}%"],
             ['Min Volume', f"{params['min_volume']:,.0f}", 'Market Cap', f"${params['min_market_cap']/1e9:.1f}B+"],
             ['Options Days', f"{params['min_days_to_exp']} - {params['max_days_to_exp']}", 'Option Price', f"${params['min_option_price']} - ${params['max_option_price']}"],
             ['Delta Range', f"{params['min_delta']} - {params['max_delta']}", 'Min OI', f"{params['min_open_interest']:,}"]
@@ -646,14 +646,23 @@ def main():
         max_price = st.slider("Max Price", 50, 500, 300)
         min_volume = st.slider("Min Volume (M)", 1, 10, 2) * 1000000
     
-    with st.sidebar.expander("Moving Average Settings", expanded=True):
-        ma_type = st.selectbox("Moving Average Type", 
-                              ["EMA", "SMA", "WMA"], 
+    with st.sidebar.expander("Bank Settings", expanded=True):
+        ma_type = st.selectbox("Bank Type", 
+                              ["REGIONAL", "NATIONAL", "GLOBAL"], 
                               index=0,
-                              help="EMA: Exponential Moving Average (recent prices weighted more)\nSMA: Simple Moving Average (equal weight)\nWMA: Weighted Moving Average (linear weights)")
+                              help="REGIONAL: Exponential Moving Average (recent prices weighted more)\nNATIONAL: Weighted Moving Average (linear weights)\nGLOBAL: Simple Moving Average (equal weight)")
         
-        ma_period = st.selectbox("MA Period", [33, 50, 198], index=0)
-        ma_threshold = st.slider("MA Proximity %", 2.5, 10.0, 5.0, 0.5)
+        # Create mapping for display names
+        bank_options = {
+            33: "33 (JP Morgan)",
+            50: "50 (Barclays)", 
+            198: "198 (BlackRock)"
+        }
+        
+        ma_period = st.selectbox("Banks", [33, 50, 198], 
+                                format_func=lambda x: bank_options[x],
+                                index=0)
+        ma_threshold = st.slider("Bank Proximity %", 2.5, 10.0, 5.0, 0.5)
     
     with st.sidebar.expander("Market Cap", expanded=True):
         min_market_cap = st.selectbox("Min Market Cap", 
@@ -771,7 +780,7 @@ def main():
                 'Symbol': r['symbol'],
                 'Price': f"${r['price']:.2f}",
                 f'{r["ma_type"]}_{r["ma_period"]}': f"${r['ma']:.2f}",
-                'MA Diff': f"{r['ma_diff_percent']:+.2f}%",
+                'Bank Diff': f"{r['ma_diff_percent']:+.2f}%",
                 'Volume': f"{r['volume']:,.0f}",
                 'Market Cap': f"${r['market_cap']/1e9:.1f}B",
                 'Options Found': r['options_count']
@@ -880,4 +889,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
