@@ -463,6 +463,44 @@ def create_tradingview_watchlist_file(symbols):
     
     return watchlist_content
 
+def sort_results_for_pdf(results):
+    """Sort results for PDF report with the specified hierarchy"""
+    if not results:
+        return []
+    
+    # Flatten the results to include option details for sorting
+    flattened_results = []
+    for stock in results:
+        if stock['options_details']:
+            for option in stock['options_details']:
+                flattened_results.append({
+                    'symbol': stock['symbol'],
+                    'stock_price': stock['price'],
+                    'bank_price': stock['ma'],
+                    'bank_diff_percent': stock['ma_diff_percent'],
+                    'option_strike': option['strike'],
+                    'option_price': option['option_price'],
+                    'delta': option['delta'],
+                    'open_interest': option['open_interest'],
+                    'bid': option['bid'],
+                    'ask': option['ask'],
+                    'expiration': option['expiration'],
+                    'days_to_exp': option['days_to_exp'],
+                    'itm': option['in_the_money']
+                })
+    
+    # Convert to DataFrame for easier sorting
+    df = pd.DataFrame(flattened_results)
+    
+    if len(df) == 0:
+        return []
+    
+    # Apply the sorting hierarchy: Delta (desc), Option_Price (asc), Symbol (asc)
+    df_sorted = df.sort_values(['delta', 'option_price', 'symbol'], 
+                              ascending=[False, True, True])
+    
+    return df_sorted.to_dict('records')
+
 def create_pdf_report(results, params):
     """Create a PDF report of screening results in landscape mode"""
     try:
@@ -522,50 +560,57 @@ def create_pdf_report(results, params):
         story.append(summary)
         
         if results:
-            # Prepare detailed results data with options information
-            results_data = [[
-                'Stock', 'Stock_Price', f"{params['ma_type']}_{params['ma_period']}", 
-                'EMA_Diff', 'Option_Strike', 'Option_Price', 'Bid/Ask', 
-                'Open_Interest', 'Delta', 'Expiration', 'Days_to_Exp', 'ITM'
-            ]]
+            # Sort results with the new hierarchy
+            sorted_results = sort_results_for_pdf(results)
             
-            for result in results:
-                # Get the first valid option for each stock
-                if result['options_details']:
-                    option = result['options_details'][0]  # Take first option
+            if sorted_results:
+                # Prepare detailed results data with new column order and grouping
+                results_data = [[
+                    'Stock', 'Stock_Price', 'Bank_Price', 'Option_Strike', 'Option_Price', 
+                    'Delta', 'Open_Interest', 'Bid/Ask', 'Expiration', 'Days_To_Exp', 'ITM', 'Bank_Diff'
+                ]]
+                
+                current_delta = None
+                for i, result in enumerate(sorted_results):
+                    # Add blank row when delta changes
+                    if current_delta is not None and result['delta'] != current_delta:
+                        results_data.append([''] * 12)  # Blank row
+                    
+                    current_delta = result['delta']
+                    
                     results_data.append([
                         result['symbol'],
-                        f"${result['price']:.2f}",
-                        f"${result['ma']:.2f}",
-                        f"{result['ma_diff_percent']:+.2f}%",
-                        f"${option['strike']}",
-                        f"${option['option_price']:.2f}",
-                        f"${option['bid']:.2f}/${option['ask']:.2f}",
-                        f"{option['open_interest']:,}",
-                        f"{option['delta']:.2f}",
-                        option['expiration'],
-                        str(option['days_to_exp']),
-                        'Yes' if option['in_the_money'] else 'No'
+                        f"${result['stock_price']:.2f}",
+                        f"${result['bank_price']:.2f}",
+                        f"${result['option_strike']}",
+                        f"${result['option_price']:.2f}",
+                        f"{result['delta']:.2f}",
+                        f"{result['open_interest']:,}",
+                        f"${result['bid']:.2f}/${result['ask']:.2f}",
+                        result['expiration'],
+                        str(result['days_to_exp']),
+                        'Yes' if result['itm'] else 'No',
+                        f"{result['bank_diff_percent']:+.2f}%"
                     ])
-            
-            # Create table with appropriate column widths for landscape
-            col_widths = [0.6*inch, 0.8*inch, 1.0*inch, 0.7*inch, 0.8*inch, 
-                         0.8*inch, 1.0*inch, 0.9*inch, 0.5*inch, 1.0*inch, 0.7*inch, 0.5*inch]
-            
-            results_table = Table(results_data, colWidths=col_widths)
-            results_table.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 8),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('FONTSIZE', (0, 1), (-1, -1), 7),
-                ('ROWBREAK', (0, 20), (-1, -1), 'AFTER'),
-            ]))
-            story.append(results_table)
+                
+                # Create table with appropriate column widths for landscape
+                col_widths = [0.5*inch, 0.7*inch, 0.7*inch, 0.7*inch, 0.7*inch, 
+                             0.5*inch, 0.8*inch, 0.9*inch, 0.9*inch, 0.6*inch, 0.4*inch, 0.6*inch]
+                
+                results_table = Table(results_data, colWidths=col_widths)
+                results_table.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 7),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                    ('FONTSIZE', (0, 1), (-1, -1), 6),
+                    ('ROWBREAK', (0, 25), (-1, -1), 'AFTER'),
+                ]))
+                story.append(results_table)
         
         # Footer
         story.append(Spacer(1, 0.2*inch))
@@ -789,19 +834,53 @@ def main():
                 # Add some spacing
                 st.markdown("---")
             
-            # Extract symbols for TradingView
-            passing_symbols = [r['symbol'] for r in results]
+            # Extract symbols for TradingView - Apply same sorting logic to dashboard
+            sorted_for_dashboard = sort_results_for_pdf(results)
+            if sorted_for_dashboard:
+                # Get unique symbols in sorted order for dashboard display
+                seen_symbols = set()
+                passing_symbols = []
+                for result in sorted_for_dashboard:
+                    if result['symbol'] not in seen_symbols:
+                        passing_symbols.append(result['symbol'])
+                        seen_symbols.add(result['symbol'])
+            else:
+                passing_symbols = [r['symbol'] for r in results]
             
-            # Results table
-            results_df = pd.DataFrame([{
-                'Symbol': r['symbol'],
-                'Price': f"${r['price']:.2f}",
-                f'{r["ma_type"]}_{r["ma_period"]}': f"${r['ma']:.2f}",
-                'Bank Diff': f"{r['ma_diff_percent']:+.2f}%",
-                'Volume': f"{r['volume']:,.0f}",
-                'Market Cap': f"${r['market_cap']/1e9:.1f}B",
-                'Options Found': r['options_count']
-            } for r in results])
+            # Results table for dashboard - Apply same sorting logic
+            if sorted_for_dashboard:
+                # Create dashboard results with same sorting
+                dashboard_data = []
+                seen_symbols = set()
+                for result in sorted_for_dashboard:
+                    if result['symbol'] not in seen_symbols:
+                        # Find the original stock data
+                        stock_data = next(r for r in results if r['symbol'] == result['symbol'])
+                        dashboard_data.append({
+                            'Symbol': result['symbol'],
+                            'Price': f"${result['stock_price']:.2f}",
+                            f'{params["ma_type"]}': f"${result['bank_price']:.2f}",
+                            'Bank Diff': f"{result['bank_diff_percent']:+.2f}%",
+                            'Volume': f"{stock_data['volume']:,.0f}",
+                            'Market Cap': f"${stock_data['market_cap']/1e9:.1f}B",
+                            'Options Found': stock_data['options_count'],
+                            'Delta': f"{result['delta']:.2f}",
+                            'Option Price': f"${result['option_price']:.2f}"
+                        })
+                        seen_symbols.add(result['symbol'])
+                
+                results_df = pd.DataFrame(dashboard_data)
+            else:
+                # Fallback if no sorted results
+                results_df = pd.DataFrame([{
+                    'Symbol': r['symbol'],
+                    'Price': f"${r['price']:.2f}",
+                    f'{r["ma_type"]}': f"${r['ma']:.2f}",
+                    'Bank Diff': f"{r['ma_diff_percent']:+.2f}%",
+                    'Volume': f"{r['volume']:,.0f}",
+                    'Market Cap': f"${r['market_cap']/1e9:.1f}B",
+                    'Options Found': r['options_count']
+                } for r in results])
             
             st.dataframe(results_df, use_container_width=True)
             
