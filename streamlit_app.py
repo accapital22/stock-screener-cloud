@@ -394,38 +394,38 @@ class OptimizedFuturesScreener:
         try:
             # Major futures contracts with their Yahoo Finance symbols
             futures_data = [
-                # Equity Index Futures
-                {'symbol': 'ES=F', 'name': 'S&P 500 E-Mini', 'category': 'equity', 'exchange': 'CME'},
-                {'symbol': 'NQ=F', 'name': 'NASDAQ E-Mini', 'category': 'equity', 'exchange': 'CME'},
-                {'symbol': 'YM=F', 'name': 'Dow E-Mini', 'category': 'equity', 'exchange': 'CBOT'},
-                {'symbol': 'RTY=F', 'name': 'Russell 2000 E-Mini', 'category': 'equity', 'exchange': 'CME'},
-                
-                # Commodity Futures
-                {'symbol': 'CL=F', 'name': 'Crude Oil WTI', 'category': 'energy', 'exchange': 'NYMEX'},
-                {'symbol': 'GC=F', 'name': 'Gold', 'category': 'metals', 'exchange': 'COMEX'},
-                {'symbol': 'SI=F', 'name': 'Silver', 'category': 'metals', 'exchange': 'COMEX'},
-                {'symbol': 'HG=F', 'name': 'Copper', 'category': 'metals', 'exchange': 'COMEX'},
-                {'symbol': 'PL=F', 'name': 'Platinum', 'category': 'metals', 'exchange': 'NYMEX'},
-                {'symbol': 'NG=F', 'name': 'Natural Gas', 'category': 'energy', 'exchange': 'NYMEX'},
-                {'symbol': 'ZC=F', 'name': 'Corn', 'category': 'grains', 'exchange': 'CBOT'},
-                {'symbol': 'ZW=F', 'name': 'Wheat', 'category': 'grains', 'exchange': 'CBOT'},
-                {'symbol': 'ZS=F', 'name': 'Soybeans', 'category': 'grains', 'exchange': 'CBOT'},
-
-                # Crypto Futures
-                {'symbol': 'BTC=F', 'name': 'Bitcoin Futures', 'category': 'crypto', 'exchange': 'CME'},
-                {'symbol': 'ETH=F', 'name': 'Ethereum Futures', 'category': 'crypto', 'exchange': 'CME'},
-                
-                # Currency Futures
-                {'symbol': '6E=F', 'name': 'Euro FX', 'category': 'fx', 'exchange': 'CME'},
-                {'symbol': '6J=F', 'name': 'Japanese Yen', 'category': 'fx', 'exchange': 'CME'},
-                {'symbol': '6B=F', 'name': 'British Pound', 'category': 'fx', 'exchange': 'CME'},
-                {'symbol': '6C=F', 'name': 'Canadian Dollar', 'category': 'fx', 'exchange': 'CME'},
-                
-                # Interest Rate Futures
-                {'symbol': 'ZN=F', 'name': '10-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
-                {'symbol': 'ZB=F', 'name': '30-Year T-Bond', 'category': 'rates', 'exchange': 'CBOT'},
-                {'symbol': 'ZF=F', 'name': '5-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
-            ]
+                            # Equity Index Futures (Continuous)
+                            {'symbol': 'ES1!', 'name': 'S&P 500 E-Mini Continuous', 'category': 'equity', 'exchange': 'CME'},
+                            {'symbol': 'NQ1!', 'name': 'NASDAQ E-Mini Continuous', 'category': 'equity', 'exchange': 'CME'},
+                            {'symbol': 'YM1!', 'name': 'Dow E-Mini Continuous', 'category': 'equity', 'exchange': 'CBOT'},
+                            {'symbol': 'RTY1!', 'name': 'Russell 2000 E-Mini Continuous', 'category': 'equity', 'exchange': 'CME'},
+                            
+                            # Commodity Futures (Continuous)
+                            {'symbol': 'CL1!', 'name': 'Crude Oil WTI Continuous', 'category': 'energy', 'exchange': 'NYMEX'},
+                            {'symbol': 'GC1!', 'name': 'Gold Continuous', 'category': 'metals', 'exchange': 'COMEX'},
+                            {'symbol': 'SI1!', 'name': 'Silver Continuous', 'category': 'metals', 'exchange': 'COMEX'},
+                            {'symbol': 'HG1!', 'name': 'Copper Continuous', 'category': 'metals', 'exchange': 'COMEX'},
+                            {'symbol': 'PL1!', 'name': 'Platinum Continuous', 'category': 'metals', 'exchange': 'NYMEX'},
+                            {'symbol': 'NG1!', 'name': 'Natural Gas Continuous', 'category': 'energy', 'exchange': 'NYMEX'},
+                            {'symbol': 'ZC1!', 'name': 'Corn Continuous', 'category': 'grains', 'exchange': 'CBOT'},
+                            {'symbol': 'ZW1!', 'name': 'Wheat Continuous', 'category': 'grains', 'exchange': 'CBOT'},
+                            {'symbol': 'ZS1!', 'name': 'Soybeans Continuous', 'category': 'grains', 'exchange': 'CBOT'},
+                            
+                            # Currency Futures (Continuous)
+                            {'symbol': '6E1!', 'name': 'Euro FX Continuous', 'category': 'fx', 'exchange': 'CME'},
+                            {'symbol': '6J1!', 'name': 'Japanese Yen Continuous', 'category': 'fx', 'exchange': 'CME'},
+                            {'symbol': '6B1!', 'name': 'British Pound Continuous', 'category': 'fx', 'exchange': 'CME'},
+                            {'symbol': '6C1!', 'name': 'Canadian Dollar Continuous', 'category': 'fx', 'exchange': 'CME'},
+                            
+                            # Interest Rate Futures (Continuous)
+                            {'symbol': 'ZN1!', 'name': '10-Year T-Note Continuous', 'category': 'rates', 'exchange': 'CBOT'},
+                            {'symbol': 'ZB1!', 'name': '30-Year T-Bond Continuous', 'category': 'rates', 'exchange': 'CBOT'},
+                            {'symbol': 'ZF1!', 'name': '5-Year T-Note Continuous', 'category': 'rates', 'exchange': 'CBOT'},
+                            
+                            # Crypto Futures (Keep as monthly - no continuous format)
+                            {'symbol': 'BTC=F', 'name': 'Bitcoin Futures', 'category': 'crypto', 'exchange': 'CME'},
+                            {'symbol': 'ETH=F', 'name': 'Ethereum Futures', 'category': 'crypto', 'exchange': 'CME'},
+]
             
             symbols_df = pd.DataFrame(futures_data)
             st.success(f"✅ Loaded {len(futures_data)} major futures contracts")
@@ -438,12 +438,13 @@ class OptimizedFuturesScreener:
     def get_fallback_futures_symbols(self):
         """Provide fallback futures symbol list"""
         fallback_futures = [
-            {'symbol': 'ES=F', 'name': 'S&P 500 E-Mini', 'category': 'equity', 'exchange': 'CME'},
-            {'symbol': 'NQ=F', 'name': 'NASDAQ E-Mini', 'category': 'equity', 'exchange': 'CME'},
-            {'symbol': 'CL=F', 'name': 'Crude Oil WTI', 'category': 'energy', 'exchange': 'NYMEX'},
-            {'symbol': 'GC=F', 'name': 'Gold', 'category': 'metals', 'exchange': 'COMEX'},
-            {'symbol': '6E=F', 'name': 'Euro FX', 'category': 'fx', 'exchange': 'CME'},
-            {'symbol': 'ZN=F', 'name': '10-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
+            {'symbol': 'ES1!', 'name': 'S&P 500 E-Mini Continuous', 'category': 'equity', 'exchange': 'CME'},
+            {'symbol': 'NQ1!', 'name': 'NASDAQ E-Mini Continuous', 'category': 'equity', 'exchange': 'CME'},
+            {'symbol': 'CL1!', 'name': 'Crude Oil WTI Continuous', 'category': 'energy', 'exchange': 'NYMEX'},
+            {'symbol': 'GC1!', 'name': 'Gold Continuous', 'category': 'metals', 'exchange': 'COMEX'},
+            {'symbol': '6E1!', 'name': 'Euro FX Continuous', 'category': 'fx', 'exchange': 'CME'},
+            {'symbol': 'ZN1!', 'name': '10-Year T-Note Continuous', 'category': 'rates', 'exchange': 'CBOT'},
+            # Crypto Futures
             {'symbol': 'BTC=F', 'name': 'Bitcoin Futures', 'category': 'crypto', 'exchange': 'CME'},
             {'symbol': 'ETH=F', 'name': 'Ethereum Futures', 'category': 'crypto', 'exchange': 'CME'},
         ]
@@ -1569,6 +1570,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
