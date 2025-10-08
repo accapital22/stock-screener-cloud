@@ -19,7 +19,7 @@ warnings.filterwarnings('ignore')
 
 # Page configuration
 st.set_page_config(
-    page_title="Clarity Screener Pro 9.0",
+    page_title="Clarity Pro 9.0 Suite",
     page_icon="📈",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -34,9 +34,19 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
     }
+    .section-header {
+        font-size: 2rem;
+        color: #2e86ab;
+        margin: 2rem 0 1rem 0;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #2e86ab;
+    }
     @media (max-width: 768px) {
         .main-header {
             font-size: 2rem !important;
+        }
+        .section-header {
+            font-size: 1.5rem !important;
         }
     }
 </style>
@@ -375,6 +385,181 @@ class OptimizedScreener:
             st.error(f"Error in screening process: {str(e)}")
             return []
 
+class OptimizedFuturesScreener:
+    def __init__(self):
+        self.results = []
+    
+    def load_futures_symbols(self):
+        """Load major futures symbols"""
+        try:
+            # Major futures contracts with their Yahoo Finance symbols
+            futures_data = [
+                # Equity Index Futures
+                {'symbol': 'ES=F', 'name': 'S&P 500 E-Mini', 'category': 'equity', 'exchange': 'CME'},
+                {'symbol': 'NQ=F', 'name': 'NASDAQ E-Mini', 'category': 'equity', 'exchange': 'CME'},
+                {'symbol': 'YM=F', 'name': 'Dow E-Mini', 'category': 'equity', 'exchange': 'CBOT'},
+                {'symbol': 'RTY=F', 'name': 'Russell 2000 E-Mini', 'category': 'equity', 'exchange': 'CME'},
+                
+                # Commodity Futures
+                {'symbol': 'CL=F', 'name': 'Crude Oil WTI', 'category': 'energy', 'exchange': 'NYMEX'},
+                {'symbol': 'GC=F', 'name': 'Gold', 'category': 'metals', 'exchange': 'COMEX'},
+                {'symbol': 'SI=F', 'name': 'Silver', 'category': 'metals', 'exchange': 'COMEX'},
+                {'symbol': 'HG=F', 'name': 'Copper', 'category': 'metals', 'exchange': 'COMEX'},
+                {'symbol': 'PL=F', 'name': 'Platinum', 'category': 'metals', 'exchange': 'NYMEX'},
+                {'symbol': 'NG=F', 'name': 'Natural Gas', 'category': 'energy', 'exchange': 'NYMEX'},
+                {'symbol': 'ZC=F', 'name': 'Corn', 'category': 'grains', 'exchange': 'CBOT'},
+                {'symbol': 'ZW=F', 'name': 'Wheat', 'category': 'grains', 'exchange': 'CBOT'},
+                {'symbol': 'ZS=F', 'name': 'Soybeans', 'category': 'grains', 'exchange': 'CBOT'},
+                
+                # Currency Futures
+                {'symbol': '6E=F', 'name': 'Euro FX', 'category': 'fx', 'exchange': 'CME'},
+                {'symbol': '6J=F', 'name': 'Japanese Yen', 'category': 'fx', 'exchange': 'CME'},
+                {'symbol': '6B=F', 'name': 'British Pound', 'category': 'fx', 'exchange': 'CME'},
+                {'symbol': '6C=F', 'name': 'Canadian Dollar', 'category': 'fx', 'exchange': 'CME'},
+                
+                # Interest Rate Futures
+                {'symbol': 'ZN=F', 'name': '10-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
+                {'symbol': 'ZB=F', 'name': '30-Year T-Bond', 'category': 'rates', 'exchange': 'CBOT'},
+                {'symbol': 'ZF=F', 'name': '5-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
+            ]
+            
+            symbols_df = pd.DataFrame(futures_data)
+            st.success(f"✅ Loaded {len(futures_data)} major futures contracts")
+            return symbols_df
+            
+        except Exception as e:
+            st.error(f"Error loading futures symbols: {str(e)}")
+            return self.get_fallback_futures_symbols()
+    
+    def get_fallback_futures_symbols(self):
+        """Provide fallback futures symbol list"""
+        fallback_futures = [
+            {'symbol': 'ES=F', 'name': 'S&P 500 E-Mini', 'category': 'equity', 'exchange': 'CME'},
+            {'symbol': 'NQ=F', 'name': 'NASDAQ E-Mini', 'category': 'equity', 'exchange': 'CME'},
+            {'symbol': 'CL=F', 'name': 'Crude Oil WTI', 'category': 'energy', 'exchange': 'NYMEX'},
+            {'symbol': 'GC=F', 'name': 'Gold', 'category': 'metals', 'exchange': 'COMEX'},
+            {'symbol': '6E=F', 'name': 'Euro FX', 'category': 'fx', 'exchange': 'CME'},
+            {'symbol': 'ZN=F', 'name': '10-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
+        ]
+        return pd.DataFrame(fallback_futures)
+    
+    def calculate_ema(self, prices, period=50):
+        """Calculate Exponential Moving Average"""
+        return prices.ewm(span=period, adjust=False).mean()
+    
+    def calculate_sma(self, prices, period=50):
+        """Calculate Simple Moving Average"""
+        return prices.rolling(window=period).mean()
+    
+    def calculate_wma(self, prices, period=50):
+        """Calculate Weighted Moving Average"""
+        def wma_calc(x):
+            weights = np.arange(1, len(x) + 1)
+            return np.dot(x, weights) / weights.sum()
+        
+        return prices.rolling(window=period).apply(wma_calc, raw=True)
+    
+    def calculate_moving_average(self, prices, ma_type, period):
+        """Calculate moving average based on type"""
+        if ma_type == "REGIONAL":
+            return self.calculate_ema(prices, period)
+        elif ma_type == "GLOBAL":
+            return self.calculate_sma(prices, period)
+        elif ma_type == "NATIONAL":
+            return self.calculate_wma(prices, period)
+        else:
+            return self.calculate_ema(prices, period)
+    
+    def screen_futures_contract(self, symbol, params):
+        """Screen individual futures contract for bank proximity"""
+        try:
+            ticker = yf.Ticker(symbol)
+            hist = ticker.history(period="1y", interval="1d")
+            
+            if len(hist) < params['ma_period']:
+                return None, "Insufficient data"
+            
+            current_price = hist['Close'].iloc[-1]
+            if not (params['min_price'] <= current_price <= params['max_price']):
+                return None, f"Price ${current_price:.2f} outside range"
+            
+            avg_volume = hist['Volume'].tail(20).mean()
+            if avg_volume < params['min_volume']:
+                return None, f"Volume {avg_volume:,.0f} below requirement"
+            
+            # Calculate selected moving average
+            ma_type = params['ma_type']
+            ma_period = params['ma_period']
+            
+            hist['MA'] = self.calculate_moving_average(hist['Close'], ma_type, ma_period)
+            current_ma = hist['MA'].iloc[-1]
+            ma_diff_percent = ((current_price - current_ma) / current_ma) * 100
+            
+            if abs(ma_diff_percent) > params['ma_threshold']:
+                return None, f"Bank diff {ma_diff_percent:.2f}% > threshold"
+            
+            futures_data = {
+                'symbol': symbol,
+                'name': ticker.info.get('shortName', symbol),
+                'price': current_price,
+                'ma': current_ma,
+                'ma_type': ma_type,
+                'ma_period': ma_period,
+                'ma_diff_percent': ma_diff_percent,
+                'volume': avg_volume,
+                'chart_data': hist[['Close', 'MA']].tail(30)
+            }
+            
+            return futures_data, "PASS"
+            
+        except Exception as e:
+            return None, f"Error: {str(e)}"
+    
+    def run_optimized_screener(self, params):
+        """Run optimized futures screening for bank proximity"""
+        try:
+            symbols_df = self.load_futures_symbols()
+            
+            st.info(f"📊 Loaded {len(symbols_df)} futures contracts")
+            
+            # Filter by category if specified
+            if params.get('category_filter'):
+                symbols_df = symbols_df[symbols_df['category'].isin(params['category_filter'])]
+                st.info(f"🎯 Filtered to {len(symbols_df)} contracts in selected categories")
+            
+            qualified_symbols = symbols_df['symbol'].tolist()
+            
+            if not qualified_symbols:
+                st.error("No futures contracts passed category filtering")
+                return []
+            
+            results = []
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            for i, symbol in enumerate(qualified_symbols):
+                status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
+                result, message = self.screen_futures_contract(symbol, params)
+                
+                if result:
+                    results.append(result)
+                    st.success(f"✅ {symbol}: {message}")
+                
+                progress_bar.progress((i + 1) / len(qualified_symbols))
+                time.sleep(0.3)
+            
+            status_text.text("Screening complete!")
+            
+            if not results:
+                st.error("❌ No futures contracts passed screening criteria!")
+                st.info("💡 Try relaxing your price range or bank proximity threshold")
+            
+            return results
+            
+        except Exception as e:
+            st.error(f"Error in screening process: {str(e)}")
+            return []
+
 def display_options_details(selected_stock):
     """Display detailed options information"""
     if not selected_stock['options_details']:
@@ -467,14 +652,34 @@ def create_tradingview_watchlist_file(symbols):
     
     return watchlist_content
 
+def create_futures_tradingview_watchlist(symbols):
+    """Create TradingView watchlist content for futures"""
+    if not symbols:
+        return None
+    
+    # Format futures symbols for TradingView (comma-separated)
+    watchlist_content = ",".join(symbols)
+    
+    return watchlist_content
+
+def create_futures_tradingview_watchlist_file(symbols):
+    """Create a watchlist file for futures that can be imported into TradingView"""
+    if not symbols:
+        return None
+    
+    # TradingView watchlist format for futures
+    watchlist_content = "\n".join(symbols)
+    
+    return watchlist_content
+
 def get_bank_color(ma_type):
     """Get color for Bank Type"""
     colors = {
         "GLOBAL": "#ffa726",  # Orange
-        "NATIONAL": "#787b86",   # Gray
-        "REGIONAL": "#2962ff",  # Blue 
+        "NATIONAL": "#fb0707",  # Red
+        "REGIONAL": "#01f90b"   # Green
     }
-    return colors.get(ma_type, "#ff7f0e")  # Default orange
+    return colors.get(ma_type, "#ff7f0e")
 
 def get_bank_name(ma_period):
     """Get Bank name for period"""
@@ -656,7 +861,113 @@ def create_pdf_report(results, params):
         st.error(f"Error creating PDF: {str(e)}")
         return None
 
-def send_email_with_attachment(pdf_buffer, recipient_emails):
+def create_futures_pdf_report(results, params):
+    """Create a PDF report of futures screening results"""
+    try:
+        from reportlab.lib.pagesizes import letter, landscape
+        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib import colors
+        from reportlab.lib.units import inch
+        
+        bank_options = {
+            33: "JP Morgan",
+            50: "Barclays", 
+            198: "BlackRock"
+        }
+        
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=landscape(letter))
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Title
+        title = Paragraph(f"Clarity Futures Pro - Bank Proximity Report", styles['Title'])
+        story.append(title)
+        story.append(Spacer(1, 0.2*inch))
+        
+        # Screening Parameters
+        params_text = Paragraph(f"Screening Parameters:", styles['Heading2'])
+        story.append(params_text)
+        
+        param_data = [
+            ['Parameter', 'Value', 'Parameter', 'Value'],
+            ['Price Range', f"${params['min_price']} - ${params['max_price']}", 'Bank Type', params['ma_type']],
+            ['Banks', bank_options.get(params['ma_period'], params['ma_period']), 'Bank Threshold', f"{params['ma_threshold']}%"],
+            ['Min Volume', f"{params['min_volume']:,.0f}", 'Categories', ', '.join(params.get('category_filter', ['All']))],
+        ]
+        
+        param_table = Table(param_data, colWidths=[1.5*inch, 2*inch, 1.5*inch, 2*inch])
+        param_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+        ]))
+        story.append(param_table)
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Results Summary
+        summary = Paragraph(f"Results Summary: {len(results)} Futures Contracts Found", styles['Heading2'])
+        story.append(summary)
+        
+        if results:
+            # Sort by bank proximity (closest to bank price first)
+            results_sorted = sorted(results, key=lambda x: abs(x['ma_diff_percent']))
+            
+            results_data = [[
+                'Contract', 'Price', 'Bank_Price', 'Bank_Diff', 'Volume', 'Category'
+            ]]
+            
+            for result in results_sorted:
+                # Get category from original data
+                category = "N/A"
+                try:
+                    screener = OptimizedFuturesScreener()
+                    all_symbols = screener.load_futures_symbols()
+                    symbol_info = all_symbols[all_symbols['symbol'] == result['symbol']].iloc[0]
+                    category = symbol_info['category']
+                except:
+                    pass
+                
+                results_data.append([
+                    result['symbol'],
+                    f"${result['price']:.2f}",
+                    f"${result['ma']:.2f}",
+                    f"{result['ma_diff_percent']:+.2f}%",
+                    f"{result['volume']:,.0f}",
+                    category
+                ])
+            
+            results_table = Table(results_data, colWidths=[1.2*inch, 1*inch, 1*inch, 0.8*inch, 1*inch, 0.8*inch])
+            results_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.darkblue),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.lightblue),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ]))
+            story.append(results_table)
+        
+        # Footer
+        story.append(Spacer(1, 0.2*inch))
+        footer = Paragraph(f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal'])
+        story.append(footer)
+        
+        doc.build(story)
+        buffer.seek(0)
+        return buffer
+        
+    except Exception as e:
+        st.error(f"Error creating PDF: {str(e)}")
+        return None
+
+def send_email_with_attachment(pdf_buffer, recipient_emails, report_type="stocks"):
     """Send email with PDF attachment to multiple recipients"""
     try:
         # Email configuration - UPDATE THESE WITH YOUR EMAIL CREDENTIALS
@@ -669,28 +980,51 @@ def send_email_with_attachment(pdf_buffer, recipient_emails):
         msg = MIMEMultipart()
         msg['From'] = sender_email
         msg['To'] = ", ".join(recipient_emails)  # Join multiple recipients
-        msg['Subject'] = f"Clarity Screener Pro Report - {datetime.now().strftime('%Y-%m-%d')}"
+        
+        if report_type == "stocks":
+            msg['Subject'] = f"Clarity Screener Pro Report - {datetime.now().strftime('%Y-%m-%d')}"
+        else:
+            msg['Subject'] = f"Clarity Futures Pro Report - {datetime.now().strftime('%Y-%m-%d')}"
         
         # Email body
-        body = f"""
-        Clarity Screener Pro 9.0 Screening Report
-        
-        Report generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-        
-        This report contains the latest screening results from Clarity Screener Pro.
-        
-        Best regards,
-        Clarity Screener Pro Team
-        """
+        if report_type == "stocks":
+            body = f"""
+            Clarity Screener Pro 9.0 Screening Report
+            
+            Report generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            
+            This report contains the latest screening results from Clarity Screener Pro.
+            
+            Best regards,
+            Clarity Screener Pro Team
+            """
+        else:
+            body = f"""
+            Clarity Futures Pro 9.0 Screening Report
+            
+            Report generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+            
+            This report contains the latest futures screening results from Clarity Futures Pro.
+            
+            Best regards,
+            Clarity Futures Pro Team
+            """
+            
         msg.attach(MIMEText(body, 'plain'))
         
         # Attach PDF
         pdf_attachment = MIMEBase('application', 'octet-stream')
         pdf_attachment.set_payload(pdf_buffer.getvalue())
         encoders.encode_base64(pdf_attachment)
+        
+        if report_type == "stocks":
+            filename = f'clarity_screener_report_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf'
+        else:
+            filename = f'clarity_futures_report_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf'
+            
         pdf_attachment.add_header(
             'Content-Disposition',
-            f'attachment; filename=clarity_screener_report_{datetime.now().strftime("%Y%m%d_%H%M")}.pdf'
+            f'attachment; filename={filename}'
         )
         msg.attach(pdf_attachment)
         
@@ -707,300 +1041,507 @@ def send_email_with_attachment(pdf_buffer, recipient_emails):
     except Exception as e:
         st.error(f"Error sending email: {str(e)}")
         return False
-
 def main():
-    st.markdown('<h1 class="main-header">📈 Clarity Screener Pro 9.0</h1>', unsafe_allow_html=True)
-    st.markdown("### Advanced S&P 500 Screening with Options Data")
+    st.markdown('<h1 class="main-header">📈 Clarity Pro 9.0 Suite</h1>', unsafe_allow_html=True)
+    st.markdown("### Advanced Stock & Futures Screening Platform")
     
     # Initialize session state to preserve results
-    if 'screening_results' not in st.session_state:
-        st.session_state.screening_results = None
-    if 'screening_params' not in st.session_state:
-        st.session_state.screening_params = None
+    if 'stock_results' not in st.session_state:
+        st.session_state.stock_results = None
+    if 'stock_params' not in st.session_state:
+        st.session_state.stock_params = None
+    if 'futures_results' not in st.session_state:
+        st.session_state.futures_results = None
+    if 'futures_params' not in st.session_state:
+        st.session_state.futures_params = None
     
-    # Initialize screener
-    screener = OptimizedScreener()
+    # Initialize screeners
+    stock_screener = OptimizedScreener()
+    futures_screener = OptimizedFuturesScreener()
     
-    # Sidebar parameters
-    st.sidebar.header("🎯 Screening Parameters")
+    # Create tabs for Stock and Futures screening
+    tab1, tab2 = st.tabs(["📊 Stock Screener", "⚡ Futures Screener"])
     
-    with st.sidebar.expander("Price & Volume", expanded=True):
-        min_price = st.slider("Min Price", 10, 200, 30)
-        max_price = st.slider("Max Price", 50, 500, 300)
-        min_volume = st.slider("Min Volume (M)", 1, 10, 2) * 1000000
-    
-    with st.sidebar.expander("Bank Settings", expanded=True):
-        ma_type = st.selectbox("Bank Type", 
-                              ["REGIONAL", "NATIONAL", "GLOBAL"], 
-                              index=0,
-                              help="REGIONAL: Exponential Moving Average (recent prices weighted more)\nNATIONAL: Weighted Moving Average (linear weights)\nGLOBAL: Simple Moving Average (equal weight)")
+    with tab1:
+        st.markdown('<div class="section-header">Stock Options Screener</div>', unsafe_allow_html=True)
+        st.markdown("### S&P 500 Screening with Options Data")
         
-        # Create mapping for display names (show only bank names, but use numbers in code)
-        bank_display_to_code = {
-            "JP Morgan": 33,
-            "Barclays": 50,
-            "BlackRock": 198
+        # Stock Sidebar parameters
+        st.sidebar.header("🎯 Stock Screening Parameters")
+        
+        with st.sidebar.expander("Price & Volume", expanded=True):
+            min_price = st.slider("Min Price", 10, 200, 30, key="stock_min_price")
+            max_price = st.slider("Max Price", 50, 500, 300, key="stock_max_price")
+            min_volume = st.slider("Min Volume (M)", 1, 10, 2, key="stock_min_volume") * 1000000
+        
+        with st.sidebar.expander("Bank Settings", expanded=True):
+            ma_type = st.selectbox("Bank Type", 
+                                  ["REGIONAL", "NATIONAL", "GLOBAL"], 
+                                  index=0,
+                                  key="stock_ma_type",
+                                  help="REGIONAL: Exponential Moving Average (recent prices weighted more)\nNATIONAL: Weighted Moving Average (linear weights)\nGLOBAL: Simple Moving Average (equal weight)")
+            
+            # Create mapping for display names (show only bank names, but use numbers in code)
+            bank_display_to_code = {
+                "JP Morgan": 33,
+                "Barclays": 50,
+                "BlackRock": 198
+            }
+            
+            bank_display = st.selectbox("Banks", ["JP Morgan", "Barclays", "BlackRock"], index=0, key="stock_bank")
+            ma_period = bank_display_to_code[bank_display]
+            ma_threshold = st.slider("Bank Proximity %", 2.5, 10.0, 5.0, 0.5, key="stock_ma_threshold")
+        
+        with st.sidebar.expander("Market Cap", expanded=True):
+            min_market_cap = st.selectbox("Min Market Cap", 
+                                        [("Large Cap", 10e9), ("Mid Cap", 2e9), ("Small Cap", 300e6)], 
+                                        format_func=lambda x: x[0],
+                                        key="stock_market_cap")[1]
+        
+        with st.sidebar.expander("Options Filters", expanded=True):
+            min_days_to_exp = st.slider("Min Days to Expiry", 7, 30, 7, key="stock_min_days")
+            max_days_to_exp = st.slider("Max Days to Expiry", 14, 60, 30, key="stock_max_days")
+            min_option_price = st.slider("Min Option Price", 0.10, 2.00, 0.50, 0.10, key="stock_min_option")
+            max_option_price = st.slider("Max Option Price", 1.00, 5.00, 2.50, 0.10, key="stock_max_option")
+            min_delta = st.slider("Min Delta", 0.1, 0.8, 0.4, 0.1, key="stock_min_delta")
+            max_delta = st.slider("Max Delta", 0.5, 1.0, 1.0, 0.1, key="stock_max_delta")
+            min_open_interest = st.slider("Min Open Interest", 1000, 10000, 3000, 500, key="stock_min_oi")
+        
+        stock_params = {
+            'min_price': min_price,
+            'max_price': max_price,
+            'min_volume': min_volume,
+            'ma_type': ma_type,
+            'ma_period': ma_period,
+            'ma_threshold': ma_threshold,
+            'min_market_cap': min_market_cap,
+            'min_days_to_exp': min_days_to_exp,
+            'max_days_to_exp': max_days_to_exp,
+            'min_option_price': min_option_price,
+            'max_option_price': max_option_price,
+            'min_delta': min_delta,
+            'max_delta': max_delta,
+            'min_open_interest': min_open_interest
         }
         
-        bank_display = st.selectbox("Banks", ["JP Morgan", "Barclays", "BlackRock"], index=0)
-        ma_period = bank_display_to_code[bank_display]
-        ma_threshold = st.slider("Bank Proximity %", 2.5, 10.0, 5.0, 0.5)
-    
-    with st.sidebar.expander("Market Cap", expanded=True):
-        min_market_cap = st.selectbox("Min Market Cap", 
-                                    [("Large Cap", 10e9), ("Mid Cap", 2e9), ("Small Cap", 300e6)], 
-                                    format_func=lambda x: x[0])[1]
-    
-    with st.sidebar.expander("Options Filters", expanded=True):
-        min_days_to_exp = st.slider("Min Days to Expiry", 7, 30, 7)
-        max_days_to_exp = st.slider("Max Days to Expiry", 14, 60, 30)
-        min_option_price = st.slider("Min Option Price", 0.10, 2.00, 0.50, 0.10)
-        max_option_price = st.slider("Max Option Price", 1.00, 5.00, 2.50, 0.10)
-        min_delta = st.slider("Min Delta", 0.1, 0.8, 0.4, 0.1)
-        max_delta = st.slider("Max Delta", 0.5, 1.0, 1.0, 0.1)
-        min_open_interest = st.slider("Min Open Interest", 1000, 10000, 3000, 500)
-    
-    params = {
-        'min_price': min_price,
-        'max_price': max_price,
-        'min_volume': min_volume,
-        'ma_type': ma_type,
-        'ma_period': ma_period,
-        'ma_threshold': ma_threshold,
-        'min_market_cap': min_market_cap,
-        'min_days_to_exp': min_days_to_exp,
-        'max_days_to_exp': max_days_to_exp,
-        'min_option_price': min_option_price,
-        'max_option_price': max_option_price,
-        'min_delta': min_delta,
-        'max_delta': max_delta,
-        'min_open_interest': min_open_interest
-    }
-    
-    # Main screening button
-    if st.button("🚀 Run Complete Screener", type="primary", use_container_width=True):
-        with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
-            results = screener.run_optimized_screener(params)
+        # Main stock screening button
+        if st.button("🚀 Run Stock Screener", type="primary", use_container_width=True, key="stock_screener_btn"):
+            with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
+                results = stock_screener.run_optimized_screener(stock_params)
+            
+            # Store results in session state
+            st.session_state.stock_results = results
+            st.session_state.stock_params = stock_params
         
-        # Store results in session state
-        st.session_state.screening_results = results
-        st.session_state.screening_params = params
+        # Display stock results from session state (if they exist)
+        if st.session_state.stock_results is not None:
+            results = st.session_state.stock_results
+            params = st.session_state.stock_params
+            
+            if results:
+                st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
+                
+                # Email Report Section
+                st.markdown("### 📧 Stock Report Options")
+                
+                # Create PDF report
+                pdf_buffer = create_pdf_report(results, params)
+                
+                if pdf_buffer:
+                    # Create a clean card-like layout
+                    with st.container():
+                        st.markdown("#### Report Options")
+                        
+                        # Main action buttons in a row
+                        action_col1, action_col2, action_col3 = st.columns([2, 3, 2])
+                        
+                        with action_col1:
+                            # Download PDF button
+                            st.download_button(
+                                label="📄 Download PDF",
+                                data=pdf_buffer,
+                                file_name=f"clarity_screener_report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                                mime="application/pdf",
+                                use_container_width=True,
+                                key="stock_download_pdf"
+                            )
+                        
+                        with action_col2:
+                            # Email input - show placeholder but always send to accapital22@gmail.com
+                            recipient_email = st.text_input(
+                                "Email address to send report:", 
+                                value="your-email@example.com",
+                                placeholder="name@company.com",
+                                key="stock_email_input",
+                                label_visibility="visible",
+                                help="Report will always be sent to our team. Add your email to also receive a copy."
+                            )
+                        
+                        with action_col3:
+                            st.write("")  # Spacer
+                            st.write("")  # Spacer
+                            # Send Email button - BLUE and prominent
+                            email_sent = st.button(
+                                "📧 Send Stock Report", 
+                                type="primary",  # Blue button
+                                use_container_width=True,
+                                key="stock_send_email"
+                            )
+                        
+                        # Handle email sending
+                        if email_sent:
+                            # Always send to accapital22@gmail.com
+                            default_recipient = "accapital22@gmail.com"
+                            recipients = [default_recipient]
+                            
+                            # Check if user provided a valid additional email
+                            user_email = recipient_email.strip()
+                            if user_email and user_email != "your-email@example.com" and "@" in user_email:
+                                recipients.append(user_email)
+                                display_email = user_email
+                                success_message = f"✅ Stock report successfully sent to {display_email}!"
+                            else:
+                                success_message = "✅ Stock report successfully sent!"
+                            
+                            with st.spinner("📤 Sending stock report..."):
+                                if send_email_with_attachment(pdf_buffer, recipients, "stocks"):
+                                    st.success(success_message)
+                                else:
+                                    st.error("❌ Failed to send email. Please check your email configuration.")
+                    
+                    # Add some spacing
+                    st.markdown("---")
+                
+                # Extract symbols for TradingView - Apply same sorting logic to dashboard
+                sorted_for_dashboard = sort_results_for_pdf(results)
+                if sorted_for_dashboard:
+                    # Get unique symbols in sorted order for dashboard display
+                    seen_symbols = set()
+                    passing_symbols = []
+                    for result in sorted_for_dashboard:
+                        if result['symbol'] not in seen_symbols:
+                            passing_symbols.append(result['symbol'])
+                            seen_symbols.add(result['symbol'])
+                else:
+                    passing_symbols = [r['symbol'] for r in results]
+                
+                # Results table for dashboard - Apply same sorting logic and column order
+                if sorted_for_dashboard:
+                    # Create dashboard results with same sorting and proper column order
+                    dashboard_data = []
+                    seen_symbols = set()
+                    for result in sorted_for_dashboard:
+                        if result['symbol'] not in seen_symbols:
+                            # Find the original stock data
+                            stock_data = next(r for r in results if r['symbol'] == result['symbol'])
+                            dashboard_data.append({
+                                'Stock': result['symbol'],
+                                'Stock_Price': f"${result['stock_price']:.2f}",
+                                'Bank_Price': f"${result['bank_price']:.2f}",
+                                'Option_Strike': f"${result['option_strike']}",
+                                'Option_Price': f"${result['option_price']:.2f}",
+                                'Delta': f"{result['delta']:.2f}",
+                                'Open_Interest': f"{result['open_interest']:,}",
+                                'Bid/Ask': f"${result['bid']:.2f}/${result['ask']:.2f}",
+                                'Expiration': result['expiration'],
+                                'Days_To_Exp': str(result['days_to_exp']),
+                                'ITM': 'Yes' if result['itm'] else 'No',
+                                'Bank_Diff': f"{result['bank_diff_percent']:+.2f}%"
+                            })
+                            seen_symbols.add(result['symbol'])
+                    
+                    results_df = pd.DataFrame(dashboard_data)
+                else:
+                    # Fallback if no sorted results
+                    results_df = pd.DataFrame([{
+                        'Stock': r['symbol'],
+                        'Stock_Price': f"${r['price']:.2f}",
+                        'Bank_Price': f"${r['ma']:.2f}",
+                        'Bank_Diff': f"{r['ma_diff_percent']:+.2f}%",
+                        'Options_Found': r['options_count']
+                    } for r in results])
+                
+                st.dataframe(results_df, use_container_width=True)
+                
+                # TradingView Integration Section
+                st.markdown("### 📊 TradingView Integration")
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    # Copy to clipboard option
+                    watchlist_text = create_tradingview_watchlist(passing_symbols)
+                    st.text_area("📋 Copy to Clipboard", 
+                               value=watchlist_text, 
+                               height=100,
+                               help="Copy these symbols and paste into TradingView watchlist")
+                
+                with col2:
+                    # Download watchlist file
+                    watchlist_file = create_tradingview_watchlist_file(passing_symbols)
+                    st.download_button(
+                        label="📥 Download Watchlist File",
+                        data=watchlist_file,
+                        file_name="tradingview_watchlist.txt",
+                        mime="text/plain",
+                        help="Download as .txt file and import into TradingView"
+                    )
+                
+                with col3:
+                    # Multi-chart link
+                    multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
+                    if multi_chart_url:
+                        st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
+                        st.caption("Opens first 8 symbols in TradingView multi-chart")
+                
+                st.markdown("""
+                **How to import into TradingView:**
+                1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
+                2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
+                3. **Multi-Chart**: Click the link to open multiple charts simultaneously
+                """)
+                
+                # Detailed analysis section
+                st.markdown("### 📊 Detailed Analysis")
+                
+                # Let user select a stock for detailed view
+                selected_symbol = st.selectbox(
+                    "Select stock for detailed analysis", 
+                    [r['symbol'] for r in results],
+                    key="stock_selector"
+                )
+                
+                if selected_symbol:
+                    selected_stock = next(r for r in results if r['symbol'] == selected_symbol)
+                    
+                    # Create tabs for different analysis views
+                    tab1, tab2 = st.tabs(["📈 Price Chart", "📊 Options Details"])
+                    
+                    with tab1:
+                        # Create price chart with color-coded Bank Type
+                        fig = go.Figure()
+                        fig.add_trace(go.Scatter(
+                            x=selected_stock['chart_data'].index,
+                            y=selected_stock['chart_data']['Close'],
+                            name='Close Price',
+                            line=dict(color='#fff59d', width=2)
+                        ))
+                        
+                        # Get Bank color and name for the legend
+                        bank_color = get_bank_color(selected_stock['ma_type'])
+                        bank_name = get_bank_name(selected_stock['ma_period'])
+                        
+                        fig.add_trace(go.Scatter(
+                            x=selected_stock['chart_data'].index,
+                            y=selected_stock['chart_data']['MA'],
+                            name=f'{bank_name}',
+                            line=dict(color=bank_color, width=2, dash='dash')
+                        ))
+                        fig.update_layout(
+                            title=f"{selected_symbol} Price Chart (Last 30 Days)",
+                            height=400
+                        )
+                        st.plotly_chart(fig, use_container_width=True)
+                    
+                    with tab2:
+                        # Display detailed options information
+                        display_options_details(selected_stock)
+            else:
+                st.warning("No stocks passed all screening criteria with valid options")
     
-    # Display results from session state (if they exist)
-    if st.session_state.screening_results is not None:
-        results = st.session_state.screening_results
-        params = st.session_state.screening_params
+    with tab2:
+        st.markdown('<div class="section-header">Futures Screener</div>', unsafe_allow_html=True)
+        st.markdown("### Futures Market Bank Proximity Screener")
         
-        if results:
-            st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
+        # Futures Sidebar parameters
+        st.sidebar.header("🎯 Futures Screening Parameters")
+        
+        with st.sidebar.expander("Futures Price & Volume", expanded=True):
+            futures_min_price = st.slider("Min Price", 10, 500, 50, key="futures_min_price")
+            futures_max_price = st.slider("Max Price", 100, 5000, 2000, key="futures_max_price")
+            futures_min_volume = st.slider("Min Volume (K)", 1, 100, 10, key="futures_min_volume") * 1000
+        
+        with st.sidebar.expander("Futures Bank Settings", expanded=True):
+            futures_ma_type = st.selectbox("Bank Type", 
+                                          ["REGIONAL", "NATIONAL", "GLOBAL"], 
+                                          index=0,
+                                          key="futures_ma_type")
             
-            # Email Report Section
-            st.markdown("### 📧 Email Report")
+            futures_bank_display_to_code = {
+                "JP Morgan": 33,
+                "Barclays": 50,
+                "BlackRock": 198
+            }
             
-            # Create PDF report
-            pdf_buffer = create_pdf_report(results, params)
+            futures_bank_display = st.selectbox("Banks", ["JP Morgan", "Barclays", "BlackRock"], index=0, key="futures_bank")
+            futures_ma_period = futures_bank_display_to_code[futures_bank_display]
+            futures_ma_threshold = st.slider("Bank Proximity %", 1.0, 10.0, 5.0, 0.5, key="futures_ma_threshold")
+        
+        with st.sidebar.expander("Futures Categories", expanded=True):
+            futures_categories = st.multiselect(
+                "Select Categories",
+                ["equity", "energy", "metals", "grains", "fx", "rates"],
+                default=["equity", "energy", "metals"],
+                key="futures_categories"
+            )
+        
+        futures_params = {
+            'min_price': futures_min_price,
+            'max_price': futures_max_price,
+            'min_volume': futures_min_volume,
+            'ma_type': futures_ma_type,
+            'ma_period': futures_ma_period,
+            'ma_threshold': futures_ma_threshold,
+            'category_filter': futures_categories
+        }
+        
+        # Main futures screening button
+        if st.button("🚀 Run Futures Screener", type="primary", use_container_width=True, key="futures_screener_btn"):
+            with st.spinner("Loading futures contracts and screening..."):
+                results = futures_screener.run_optimized_screener(futures_params)
             
-            if pdf_buffer:
-                # Create a clean card-like layout
-                with st.container():
-                    st.markdown("#### Report Options")
+            st.session_state.futures_results = results
+            st.session_state.futures_params = futures_params
+        
+        # Display futures results
+        if st.session_state.futures_results is not None:
+            results = st.session_state.futures_results
+            params = st.session_state.futures_params
+            
+            if results:
+                st.success(f"🎉 Found {len(results)} qualifying futures contracts near bank prices!")
+                
+                # Sort by closest to bank price
+                results_sorted = sorted(results, key=lambda x: abs(x['ma_diff_percent']))
+                
+                # Add separator and header for futures list
+                st.markdown("---")
+                st.markdown("### 📈 Futures Contracts Near Bank Prices")
+                
+                # Results table
+                results_data = []
+                for result in results_sorted:
+                    # Get category
+                    category = "N/A"
+                    try:
+                        all_symbols = futures_screener.load_futures_symbols()
+                        symbol_info = all_symbols[all_symbols['symbol'] == result['symbol']].iloc[0]
+                        category = symbol_info['category']
+                        name = symbol_info['name']
+                    except:
+                        name = result.get('name', result['symbol'])
                     
-                    # Main action buttons in a row
-                    action_col1, action_col2, action_col3 = st.columns([2, 3, 2])
+                    results_data.append({
+                        'Contract': result['symbol'],
+                        'Name': name,
+                        'Price': f"${result['price']:.2f}",
+                        'Bank_Price': f"${result['ma']:.2f}",
+                        'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%",
+                        'Volume': f"{result['volume']:,.0f}",
+                        'Category': category
+                    })
+                
+                futures_df = pd.DataFrame(results_data)
+                st.dataframe(futures_df, use_container_width=True)
+                
+                # Futures TradingView Integration Section
+                st.markdown("### 📊 Futures TradingView Integration")
+                
+                futures_symbols = [r['symbol'] for r in results_sorted]
+                
+                col1, col2 = st.columns(2)
+                
+                with col1:
+                    # Copy to clipboard option for futures
+                    futures_watchlist_text = create_futures_tradingview_watchlist(futures_symbols)
+                    st.text_area("📋 Copy Futures to Clipboard", 
+                               value=futures_watchlist_text, 
+                               height=100,
+                               help="Copy these futures symbols and paste into TradingView watchlist",
+                               key="futures_clipboard")
+                
+                with col2:
+                    # Download futures watchlist file
+                    futures_watchlist_file = create_futures_tradingview_watchlist_file(futures_symbols)
+                    st.download_button(
+                        label="📥 Download Futures Watchlist",
+                        data=futures_watchlist_file,
+                        file_name="tradingview_futures_watchlist.txt",
+                        mime="text/plain",
+                        help="Download as .txt file and import into TradingView",
+                        key="futures_download"
+                    )
+                
+                # Futures PDF Report Section
+                st.markdown("### 📧 Futures Report Options")
+                
+                futures_pdf_buffer = create_futures_pdf_report(results, params)
+                
+                if futures_pdf_buffer:
+                    futures_col1, futures_col2 = st.columns(2)
                     
-                    with action_col1:
-                        # Download PDF button
+                    with futures_col1:
                         st.download_button(
-                            label="📄 Download PDF",
-                            data=pdf_buffer,
-                            file_name=f"clarity_screener_report_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
+                            label="📄 Download Futures PDF",
+                            data=futures_pdf_buffer,
+                            file_name=f"futures_bank_proximity_{datetime.now().strftime('%Y%m%d_%H%M')}.pdf",
                             mime="application/pdf",
                             use_container_width=True,
-                            key="download_pdf"
+                            key="futures_pdf_download"
                         )
                     
-                    with action_col2:
-                        # Email input - show placeholder but always send to accapital22@gmail.com
-                        recipient_email = st.text_input(
-                            "Email address to send report:", 
-                            value="your-email@example.com",
-                            placeholder="name@company.com",
-                            key="email_input",
-                            label_visibility="visible",
-                            help="Report will always be sent to our team. Add your email to also receive a copy."
-                        )
-                    
-                    with action_col3:
-                        st.write("")  # Spacer
-                        st.write("")  # Spacer
-                        # Send Email button - BLUE and prominent
-                        email_sent = st.button(
-                            "📧 Send Email Report", 
-                            type="primary",  # Blue button
+                    with futures_col2:
+                        futures_email_sent = st.button(
+                            "📧 Send Futures Report", 
+                            type="primary",
                             use_container_width=True,
-                            key="send_email"
+                            key="futures_email_btn"
                         )
                     
-                    # Handle email sending
-                    if email_sent:
+                    # Handle futures email sending
+                    if futures_email_sent:
                         # Always send to accapital22@gmail.com
                         default_recipient = "accapital22@gmail.com"
                         recipients = [default_recipient]
                         
-                        # Check if user provided a valid additional email
-                        user_email = recipient_email.strip()
-                        if user_email and user_email != "your-email@example.com" and "@" in user_email:
-                            recipients.append(user_email)
-                            display_email = user_email
-                            success_message = f"✅ Report successfully sent to {display_email}!"
-                        else:
-                            success_message = "✅ Report successfully sent!"
-                        
-                        with st.spinner("📤 Sending email report..."):
-                            if send_email_with_attachment(pdf_buffer, recipients):
-                                st.success(success_message)
+                        with st.spinner("📤 Sending futures report..."):
+                            if send_email_with_attachment(futures_pdf_buffer, recipients, "futures"):
+                                st.success("✅ Futures report successfully sent!")
                             else:
-                                st.error("❌ Failed to send email. Please check your email configuration.")
+                                st.error("❌ Failed to send futures email. Please check your email configuration.")
                 
-                # Add some spacing
-                st.markdown("---")
-            
-            # Extract symbols for TradingView - Apply same sorting logic to dashboard
-            sorted_for_dashboard = sort_results_for_pdf(results)
-            if sorted_for_dashboard:
-                # Get unique symbols in sorted order for dashboard display
-                seen_symbols = set()
-                passing_symbols = []
-                for result in sorted_for_dashboard:
-                    if result['symbol'] not in seen_symbols:
-                        passing_symbols.append(result['symbol'])
-                        seen_symbols.add(result['symbol'])
-            else:
-                passing_symbols = [r['symbol'] for r in results]
-            
-            # Results table for dashboard - Apply same sorting logic and column order
-            if sorted_for_dashboard:
-                # Create dashboard results with same sorting and proper column order
-                dashboard_data = []
-                seen_symbols = set()
-                for result in sorted_for_dashboard:
-                    if result['symbol'] not in seen_symbols:
-                        # Find the original stock data
-                        stock_data = next(r for r in results if r['symbol'] == result['symbol'])
-                        dashboard_data.append({
-                            'Stock': result['symbol'],
-                            'Stock_Price': f"${result['stock_price']:.2f}",
-                            'Bank_Price': f"${result['bank_price']:.2f}",
-                            'Option_Strike': f"${result['option_strike']}",
-                            'Option_Price': f"${result['option_price']:.2f}",
-                            'Delta': f"{result['delta']:.2f}",
-                            'Open_Interest': f"{result['open_interest']:,}",
-                            'Bid/Ask': f"${result['bid']:.2f}/${result['ask']:.2f}",
-                            'Expiration': result['expiration'],
-                            'Days_To_Exp': str(result['days_to_exp']),
-                            'ITM': 'Yes' if result['itm'] else 'No',
-                            'Bank_Diff': f"{result['bank_diff_percent']:+.2f}%"
-                        })
-                        seen_symbols.add(result['symbol'])
+                # Futures detailed analysis
+                st.markdown("### 📊 Futures Detailed Analysis")
                 
-                results_df = pd.DataFrame(dashboard_data)
-            else:
-                # Fallback if no sorted results
-                results_df = pd.DataFrame([{
-                    'Stock': r['symbol'],
-                    'Stock_Price': f"${r['price']:.2f}",
-                    'Bank_Price': f"${r['ma']:.2f}",
-                    'Bank_Diff': f"{r['ma_diff_percent']:+.2f}%",
-                    'Options_Found': r['options_count']
-                } for r in results])
-            
-            st.dataframe(results_df, use_container_width=True)
-            
-            # TradingView Integration Section
-            st.markdown("### 📊 TradingView Integration")
-            
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
-                # Copy to clipboard option
-                watchlist_text = create_tradingview_watchlist(passing_symbols)
-                st.text_area("📋 Copy to Clipboard", 
-                           value=watchlist_text, 
-                           height=100,
-                           help="Copy these symbols and paste into TradingView watchlist")
-            
-            with col2:
-                # Download watchlist file
-                watchlist_file = create_tradingview_watchlist_file(passing_symbols)
-                st.download_button(
-                    label="📥 Download Watchlist File",
-                    data=watchlist_file,
-                    file_name="tradingview_watchlist.txt",
-                    mime="text/plain",
-                    help="Download as .txt file and import into TradingView"
+                selected_futures_symbol = st.selectbox(
+                    "Select futures contract for detailed analysis", 
+                    [r['symbol'] for r in results],
+                    key="futures_selector"
                 )
-            
-            with col3:
-                # Multi-chart link
-                multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
-                if multi_chart_url:
-                    st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
-                    st.caption("Opens first 8 symbols in TradingView multi-chart")
-            
-            st.markdown("""
-            **How to import into TradingView:**
-            1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
-            2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
-            3. **Multi-Chart**: Click the link to open multiple charts simultaneously
-            """)
-            
-            # Detailed analysis section
-            st.markdown("### 📊 Detailed Analysis")
-            
-            # Let user select a stock for detailed view
-            selected_symbol = st.selectbox(
-                "Select stock for detailed analysis", 
-                [r['symbol'] for r in results],
-                key="stock_selector"
-            )
-            
-            if selected_symbol:
-                selected_stock = next(r for r in results if r['symbol'] == selected_symbol)
                 
-                # Create tabs for different analysis views
-                tab1, tab2 = st.tabs(["📈 Price Chart", "📊 Options Details"])
-                
-                with tab1:
-                    # Create price chart with color-coded Bank Type
-                    fig = go.Figure()
-                    fig.add_trace(go.Scatter(
-                        x=selected_stock['chart_data'].index,
-                        y=selected_stock['chart_data']['Close'],
-                        name='Close Price',
-                        line=dict(color='#fff59d', width=2)
-                    ))
+                if selected_futures_symbol:
+                    selected_future = next(r for r in results if r['symbol'] == selected_futures_symbol)
                     
-                    # Get Bank color and name for the legend
-                    bank_color = get_bank_color(selected_stock['ma_type'])
-                    bank_name = get_bank_name(selected_stock['ma_period'])
+                    # Display contract info without chart imagery
+                    col1, col2, col3, col4 = st.columns(4)
+                    with col1:
+                        st.metric("Current Price", f"${selected_future['price']:.2f}")
+                    with col2:
+                        st.metric("Bank Price", f"${selected_future['ma']:.2f}")
+                    with col3:
+                        st.metric("Bank Difference", f"{selected_future['ma_diff_percent']:+.2f}%")
+                    with col4:
+                        st.metric("Average Volume", f"{selected_future['volume']:,.0f}")
                     
-                    fig.add_trace(go.Scatter(
-                        x=selected_stock['chart_data'].index,
-                        y=selected_stock['chart_data']['MA'],
-                        name=f'{bank_name}',
-                        line=dict(color=bank_color, width=2, dash='dash')
-                    ))
-                    fig.update_layout(
-                        title=f"{selected_symbol} Price Chart (Last 30 Days)",
-                        height=400
-                    )
-                    st.plotly_chart(fig, use_container_width=True)
-                
-                with tab2:
-                    # Display detailed options information
-                    display_options_details(selected_stock)
-        else:
-            st.warning("No stocks passed all screening criteria with valid options")
+                    # Display additional contract information
+                    try:
+                        all_symbols = futures_screener.load_futures_symbols()
+                        symbol_info = all_symbols[all_symbols['symbol'] == selected_futures_symbol].iloc[0]
+                        st.info(f"**Contract Details:** {symbol_info['name']} | Category: {symbol_info['category']} | Exchange: {symbol_info['exchange']}")
+                    except:
+                        st.info(f"**Contract:** {selected_futures_symbol}")
+            else:
+                st.warning("No futures contracts passed the bank proximity screening")
     
     st.markdown("---")
 
