@@ -467,8 +467,8 @@ def get_bank_color(ma_type):
     """Get color for Bank Type"""
     colors = {
         "GLOBAL": "#ffa726",  # Orange
-        "NATIONAL": "#fb0707",  # Red
-        "REGIONAL": "#01f90b"   # Green
+        "NATIONAL": "#787b86",   # Gray
+        "REGIONAL": "#2962ff",  # Blue 
     }
     return colors.get(ma_type, "#ff7f0e")  # Default orange
 
@@ -973,7 +973,7 @@ def main():
                         x=selected_stock['chart_data'].index,
                         y=selected_stock['chart_data']['Close'],
                         name='Close Price',
-                        line=dict(color='#1f77b4', width=2)
+                        line=dict(color='#fce302', width=2)
                     ))
                     
                     # Get Bank color and name for the legend
@@ -1018,3 +1018,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
