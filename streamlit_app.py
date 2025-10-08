@@ -1382,7 +1382,7 @@ def main():
             
             futures_bank_display = st.selectbox("Banks", ["JP Morgan", "Barclays", "BlackRock"], index=0, key="futures_bank")
             futures_ma_period = futures_bank_display_to_code[futures_bank_display]
-            futures_ma_threshold = st.slider("Bank Proximity %", 1.0, 10.0, 5.0, 0.5, key="futures_ma_threshold")
+            futures_ma_threshold = st.slider("Bank Proximity %", 1.0, 25.0, 5.0, 0.5, key="futures_ma_threshold")
         
         with st.sidebar.expander("Futures Categories", expanded=True):
             futures_categories = st.multiselect(
@@ -1570,6 +1570,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
