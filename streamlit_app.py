@@ -973,7 +973,7 @@ def main():
                         x=selected_stock['chart_data'].index,
                         y=selected_stock['chart_data']['Close'],
                         name='Close Price',
-                        line=dict(color='#fce302', width=2)
+                        line=dict(color='#fff59d', width=2)
                     ))
                     
                     # Get Bank color and name for the legend
@@ -1018,4 +1018,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
