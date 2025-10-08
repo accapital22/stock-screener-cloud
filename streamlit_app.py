@@ -410,6 +410,10 @@ class OptimizedFuturesScreener:
                 {'symbol': 'ZC=F', 'name': 'Corn', 'category': 'grains', 'exchange': 'CBOT'},
                 {'symbol': 'ZW=F', 'name': 'Wheat', 'category': 'grains', 'exchange': 'CBOT'},
                 {'symbol': 'ZS=F', 'name': 'Soybeans', 'category': 'grains', 'exchange': 'CBOT'},
+
+                # Crypto Futures
+                {'symbol': 'BTC=F', 'name': 'Bitcoin Futures', 'category': 'crypto', 'exchange': 'CME'},
+                {'symbol': 'ETH=F', 'name': 'Ethereum Futures', 'category': 'crypto', 'exchange': 'CME'},
                 
                 # Currency Futures
                 {'symbol': '6E=F', 'name': 'Euro FX', 'category': 'fx', 'exchange': 'CME'},
@@ -440,6 +444,8 @@ class OptimizedFuturesScreener:
             {'symbol': 'GC=F', 'name': 'Gold', 'category': 'metals', 'exchange': 'COMEX'},
             {'symbol': '6E=F', 'name': 'Euro FX', 'category': 'fx', 'exchange': 'CME'},
             {'symbol': 'ZN=F', 'name': '10-Year T-Note', 'category': 'rates', 'exchange': 'CBOT'},
+            {'symbol': 'BTC=F', 'name': 'Bitcoin Futures', 'category': 'crypto', 'exchange': 'CME'},
+            {'symbol': 'ETH=F', 'name': 'Ethereum Futures', 'category': 'crypto', 'exchange': 'CME'},
         ]
         return pd.DataFrame(fallback_futures)
     
@@ -1380,8 +1386,8 @@ def main():
         with st.sidebar.expander("Futures Categories", expanded=True):
             futures_categories = st.multiselect(
                 "Select Categories",
-                ["equity", "energy", "metals", "grains", "fx", "rates"],
-                default=["equity", "energy", "metals"],
+                ["equity", "energy", "metals", "grains", "fx", "rates", "crypto"],
+                default=["equity", "energy", "metals", "fx", "crypto"],
                 key="futures_categories"
             )
         
@@ -1563,5 +1569,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
