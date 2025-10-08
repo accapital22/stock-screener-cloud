@@ -283,6 +283,10 @@ class OptimizedScreener:
             current_ma = hist['MA'].iloc[-1]
             ma_diff_percent = ((current_price - current_ma) / current_ma) * 100
             
+            # NEW FILTERING RULE: Stock price must be greater than bank price
+            if current_price <= current_ma:
+                return None, f"Stock price ${current_price:.2f} ≤ bank price ${current_ma:.2f}"
+            
             if abs(ma_diff_percent) > params['ma_threshold']:
                 return None, f"{ma_type} diff {ma_diff_percent:.2f}% > threshold"
             
@@ -1018,5 +1022,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
