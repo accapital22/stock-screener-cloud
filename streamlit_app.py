@@ -1388,7 +1388,7 @@ def main():
         with st.sidebar.expander("Futures Price & Volume", expanded=True):
             futures_min_price = st.slider("Min Price", 1, 500, 50, key="futures_min_price")
             futures_max_price = st.slider("Max Price", 50000, 250000, 50000, key="futures_max_price")
-            futures_min_volume = st.slider("Min Volume (K)", 1000, 100000, 10000, key="futures_min_volume") * 1000
+            futures_min_volume = st.slider("Min Volume (K)", 1, 100, 1000, key="futures_min_volume") * 1000
         
         with st.sidebar.expander("Futures Bank Settings", expanded=True):
             futures_ma_type = st.selectbox("Bank Type", 
@@ -1592,6 +1592,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
