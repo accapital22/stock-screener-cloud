@@ -1112,14 +1112,13 @@ def main():
     if 'cancel_futures_screening' not in st.session_state:
         st.session_state.cancel_futures_screening = False
     
-    # Initialize screeners FIRST
-    stock_screener = OptimizedScreener()
-    futures_screener = OptimizedFuturesScreener()
-    
     # Create tabs for Stock and Futures screening
     tab1, tab2 = st.tabs(["📊 Stock Screener", "⚡ Futures Screener"])
     
     with tab1:
+        # Initialize stock screener INSIDE the tab context
+        stock_screener = OptimizedScreener()
+        
         st.markdown('<div class="section-header">Stock Options Screener</div>', unsafe_allow_html=True)
         st.markdown("### S&P 500 Screening with Options Data")
         
@@ -1419,6 +1418,9 @@ def main():
                 st.warning("No stocks passed all screening criteria with valid options")
     
     with tab2:
+        # Initialize futures screener INSIDE the tab context
+        futures_screener = OptimizedFuturesScreener()
+        
         st.markdown('<div class="section-header">Futures Screener</div>', unsafe_allow_html=True)
         st.markdown("### Futures Market Bank Proximity Screener")
         
@@ -1644,6 +1646,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
