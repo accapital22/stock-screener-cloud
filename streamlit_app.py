@@ -1112,7 +1112,7 @@ def main():
     if 'cancel_futures_screening' not in st.session_state:
         st.session_state.cancel_futures_screening = False
     
-    # Initialize screeners
+    # Initialize screeners FIRST
     stock_screener = OptimizedScreener()
     futures_screener = OptimizedFuturesScreener()
     
@@ -1181,9 +1181,9 @@ def main():
             'min_open_interest': min_open_interest
         }
         
-        # Main stock screening button - REPLACE THIS SECTION
+        # Main stock screening button with cancel
         col1, col2 = st.columns([3, 1])
-        
+
         with col1:
             if st.button("🚀 Run Stock Screener", type="primary", use_container_width=True, key="stock_screener_btn"):
                 st.session_state.stock_screening_active = True
@@ -1194,7 +1194,7 @@ def main():
                 # Store results in session state
                 st.session_state.stock_results = results
                 st.session_state.stock_params = stock_params
-        
+
         with col2:
             if st.session_state.stock_screening_active:
                 if st.button("🛑 Cancel Stock Screening", type="secondary", use_container_width=True, key="cancel_stock_btn"):
@@ -1207,7 +1207,7 @@ def main():
             results = st.session_state.stock_results
             params = st.session_state.stock_params
             
-            if results:  
+            if results:
                 st.success(f"🎉 Found {len(results)} qualifying stocks with valid options!")
                 
                 # Email Report Section
@@ -1464,9 +1464,9 @@ def main():
             'category_filter': futures_categories
         }
         
-        # Main futures screening button - REPLACE THIS SECTION
+        # Main futures screening button with cancel
         col1, col2 = st.columns([3, 1])
-        
+
         with col1:
             if st.button("🚀 Run Futures Screener", type="primary", use_container_width=True, key="futures_screener_btn"):
                 st.session_state.futures_screening_active = True
@@ -1476,7 +1476,7 @@ def main():
                 
                 st.session_state.futures_results = results
                 st.session_state.futures_params = futures_params
-        
+
         with col2:
             if st.session_state.futures_screening_active:
                 if st.button("🛑 Cancel Futures Screening", type="secondary", use_container_width=True, key="cancel_futures_btn"):
@@ -1489,7 +1489,7 @@ def main():
             results = st.session_state.futures_results
             params = st.session_state.futures_params
             
-            if results:  
+            if results:
                 st.success(f"🎉 Found {len(results)} qualifying futures contracts near bank prices!")
                 
                 # Sort by closest to bank price
@@ -1644,6 +1644,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
