@@ -329,59 +329,61 @@ class OptimizedScreener:
         except Exception as e:
             return None, f"Error: {str(e)}"
     
-def run_optimized_screener(self, params):
-    """Run optimized futures screening for bank proximity with cancel support"""
-    try:
-        symbols_df = self.load_futures_symbols()
-        
-        st.info(f"📊 Loaded {len(symbols_df)} futures contracts")
-        
-        # Filter by category if specified
-        if params.get('category_filter'):
-            symbols_df = symbols_df[symbols_df['category'].isin(params['category_filter'])]
-            st.info(f"🎯 Filtered to {len(symbols_df)} contracts in selected categories")
-        
-        qualified_symbols = symbols_df['symbol'].tolist()
-        
-        if not qualified_symbols:
-            st.error("No futures contracts passed category filtering")
+    def run_optimized_screener(self, params):
+        """Run optimized screening with pre-filtering"""
+        try:
+            symbols_df = self.load_sp500_symbols()
+            
+            # Debug: Show what columns we have
+            st.write(f"📋 Loaded data with columns: {list(symbols_df.columns)}")
+            
+            if 'symbol' not in symbols_df.columns:
+                st.error("❌ 'symbol' column not found in the data. Available columns: " + str(list(symbols_df.columns)))
+                # Try to use first column as symbols
+                first_col = symbols_df.columns[0]
+                symbols_df = symbols_df.rename(columns={first_col: 'symbol'})
+                st.info(f"🔄 Using '{first_col}' as symbol column")
+            
+            all_symbols = symbols_df['symbol'].tolist()
+            st.info(f"📊 Loaded {len(all_symbols)} S&P 500 symbols")
+            
+            qualified_symbols = self.pre_filter_symbols(symbols_df, params)
+            
+            if not qualified_symbols:
+                st.error("No stocks passed initial price range filtering")
+                return []
+            
+            results = []
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            # Add longer delay to avoid rate limiting
+            delay_between_requests = 0.3  # Increased from 0.1 to 0.3 seconds
+            
+            for i, symbol in enumerate(qualified_symbols):
+                status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
+                result, message = self.screen_stock(symbol, params)
+                
+                # ONLY SHOW PASSING SYMBOLS
+                if result:
+                    results.append(result)
+                    st.success(f"✅ {symbol}: {message} | Options: {result['options_count']}")
+                
+                progress_bar.progress((i + 1) / len(qualified_symbols))
+                time.sleep(delay_between_requests)
+            
+            status_text.text("Screening complete!")
+            
+            # Show summary
+            if not results:
+                st.error("❌ No stocks passed screening criteria!")
+                st.info("💡 Try relaxing your screening criteria (price range, volume, options filters)")
+            
+            return results
+            
+        except Exception as e:
+            st.error(f"Error in screening process: {str(e)}")
             return []
-        
-        results = []
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        for i, symbol in enumerate(qualified_symbols):
-            # Check if cancellation was requested
-            if st.session_state.cancel_futures_screening:
-                st.warning("🛑 Futures screening cancelled by user")
-                st.session_state.futures_screening_active = False
-                st.session_state.cancel_futures_screening = False
-                return results
-            
-            status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
-            result, message = self.screen_futures_contract(symbol, params)
-            
-            if result:
-                results.append(result)
-                st.success(f"✅ {symbol}: {message}")
-            
-            progress_bar.progress((i + 1) / len(qualified_symbols))
-            time.sleep(0.3)
-        
-        status_text.text("Screening complete!")
-        st.session_state.futures_screening_active = False
-        
-        if not results:
-            st.error("❌ No futures contracts passed screening criteria!")
-            st.info("💡 Try relaxing your price range or bank proximity threshold")
-        
-        return results
-        
-    except Exception as e:
-        st.session_state.futures_screening_active = False
-        st.error(f"Error in screening process: {str(e)}")
-        return []
 
 class OptimizedFuturesScreener:
     def __init__(self):
@@ -542,70 +544,50 @@ class OptimizedFuturesScreener:
         except Exception as e:
             return None, f"Error: {str(e)}"
     
-def run_optimized_screener(self, params):
-    """Run optimized screening with pre-filtering and cancel support"""
-    try:
-        symbols_df = self.load_sp500_symbols()
-        
-        # Debug: Show what columns we have
-        st.write(f"📋 Loaded data with columns: {list(symbols_df.columns)}")
-        
-        if 'symbol' not in symbols_df.columns:
-            st.error("❌ 'symbol' column not found in the data. Available columns: " + str(list(symbols_df.columns)))
-            # Try to use first column as symbols
-            first_col = symbols_df.columns[0]
-            symbols_df = symbols_df.rename(columns={first_col: 'symbol'})
-            st.info(f"🔄 Using '{first_col}' as symbol column")
-        
-        all_symbols = symbols_df['symbol'].tolist()
-        st.info(f"📊 Loaded {len(all_symbols)} S&P 500 symbols")
-        
-        qualified_symbols = self.pre_filter_symbols(symbols_df, params)
-        
-        if not qualified_symbols:
-            st.error("No stocks passed initial price range filtering")
+    def run_optimized_screener(self, params):
+        """Run optimized futures screening for bank proximity"""
+        try:
+            symbols_df = self.load_futures_symbols()
+            
+            st.info(f"📊 Loaded {len(symbols_df)} futures contracts")
+            
+            # Filter by category if specified
+            if params.get('category_filter'):
+                symbols_df = symbols_df[symbols_df['category'].isin(params['category_filter'])]
+                st.info(f"🎯 Filtered to {len(symbols_df)} contracts in selected categories")
+            
+            qualified_symbols = symbols_df['symbol'].tolist()
+            
+            if not qualified_symbols:
+                st.error("No futures contracts passed category filtering")
+                return []
+            
+            results = []
+            progress_bar = st.progress(0)
+            status_text = st.empty()
+            
+            for i, symbol in enumerate(qualified_symbols):
+                status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
+                result, message = self.screen_futures_contract(symbol, params)
+                
+                if result:
+                    results.append(result)
+                    st.success(f"✅ {symbol}: {message}")
+                
+                progress_bar.progress((i + 1) / len(qualified_symbols))
+                time.sleep(0.3)
+            
+            status_text.text("Screening complete!")
+            
+            if not results:
+                st.error("❌ No futures contracts passed screening criteria!")
+                st.info("💡 Try relaxing your price range or bank proximity threshold")
+            
+            return results
+            
+        except Exception as e:
+            st.error(f"Error in screening process: {str(e)}")
             return []
-        
-        results = []
-        progress_bar = st.progress(0)
-        status_text = st.empty()
-        
-        # Add longer delay to avoid rate limiting
-        delay_between_requests = 0.3
-        
-        for i, symbol in enumerate(qualified_symbols):
-            # Check if cancellation was requested
-            if st.session_state.cancel_stock_screening:
-                st.warning("🛑 Stock screening cancelled by user")
-                st.session_state.stock_screening_active = False
-                st.session_state.cancel_stock_screening = False
-                return results
-            
-            status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
-            result, message = self.screen_stock(symbol, params)
-            
-            # ONLY SHOW PASSING SYMBOLS
-            if result:
-                results.append(result)
-                st.success(f"✅ {symbol}: {message} | Options: {result['options_count']}")
-            
-            progress_bar.progress((i + 1) / len(qualified_symbols))
-            time.sleep(delay_between_requests)
-        
-        status_text.text("Screening complete!")
-        st.session_state.stock_screening_active = False
-        
-        # Show summary
-        if not results:
-            st.error("❌ No stocks passed screening criteria!")
-            st.info("💡 Try relaxing your screening criteria (price range, volume, options filters)")
-        
-        return results
-        
-    except Exception as e:
-        st.session_state.stock_screening_active = False
-        st.error(f"Error in screening process: {str(e)}")
-        return []
 
 def display_options_details(selected_stock):
     """Display detailed options information"""
@@ -1102,23 +1084,14 @@ def main():
     if 'futures_params' not in st.session_state:
         st.session_state.futures_params = None
     
-    # ADD CANCEL FLAGS HERE
-    if 'stock_screening_active' not in st.session_state:
-        st.session_state.stock_screening_active = False
-    if 'futures_screening_active' not in st.session_state:
-        st.session_state.futures_screening_active = False
-    if 'cancel_stock_screening' not in st.session_state:
-        st.session_state.cancel_stock_screening = False
-    if 'cancel_futures_screening' not in st.session_state:
-        st.session_state.cancel_futures_screening = False
+    # Initialize screeners
+    stock_screener = OptimizedScreener()
+    futures_screener = OptimizedFuturesScreener()
     
     # Create tabs for Stock and Futures screening
     tab1, tab2 = st.tabs(["📊 Stock Screener", "⚡ Futures Screener"])
     
     with tab1:
-        # Initialize stock screener INSIDE the tab context
-        stock_screener = OptimizedScreener()
-        
         st.markdown('<div class="section-header">Stock Options Screener</div>', unsafe_allow_html=True)
         st.markdown("### S&P 500 Screening with Options Data")
         
@@ -1180,26 +1153,14 @@ def main():
             'min_open_interest': min_open_interest
         }
         
-        # Main stock screening button with cancel
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            if st.button("🚀 Run Stock Screener", type="primary", use_container_width=True, key="stock_screener_btn"):
-                st.session_state.stock_screening_active = True
-                st.session_state.cancel_stock_screening = False
-                with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
-                    results = stock_screener.run_optimized_screener(stock_params)
-                
-                # Store results in session state
-                st.session_state.stock_results = results
-                st.session_state.stock_params = stock_params
-
-        with col2:
-            if st.session_state.stock_screening_active:
-                if st.button("🛑 Cancel Stock Screening", type="secondary", use_container_width=True, key="cancel_stock_btn"):
-                    st.session_state.cancel_stock_screening = True
-                    st.session_state.stock_screening_active = False
-                    st.rerun()
+        # Main stock screening button
+        if st.button("🚀 Run Stock Screener", type="primary", use_container_width=True, key="stock_screener_btn"):
+            with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
+                results = stock_screener.run_optimized_screener(stock_params)
+            
+            # Store results in session state
+            st.session_state.stock_results = results
+            st.session_state.stock_params = stock_params
         
         # Display stock results from session state (if they exist)
         if st.session_state.stock_results is not None:
@@ -1418,9 +1379,6 @@ def main():
                 st.warning("No stocks passed all screening criteria with valid options")
     
     with tab2:
-        # Initialize futures screener INSIDE the tab context
-        futures_screener = OptimizedFuturesScreener()
-        
         st.markdown('<div class="section-header">Futures Screener</div>', unsafe_allow_html=True)
         st.markdown("### Futures Market Bank Proximity Screener")
         
@@ -1466,25 +1424,13 @@ def main():
             'category_filter': futures_categories
         }
         
-        # Main futures screening button with cancel
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            if st.button("🚀 Run Futures Screener", type="primary", use_container_width=True, key="futures_screener_btn"):
-                st.session_state.futures_screening_active = True
-                st.session_state.cancel_futures_screening = False
-                with st.spinner("Loading futures contracts and screening..."):
-                    results = futures_screener.run_optimized_screener(futures_params)
-                
-                st.session_state.futures_results = results
-                st.session_state.futures_params = futures_params
-
-        with col2:
-            if st.session_state.futures_screening_active:
-                if st.button("🛑 Cancel Futures Screening", type="secondary", use_container_width=True, key="cancel_futures_btn"):
-                    st.session_state.cancel_futures_screening = True
-                    st.session_state.futures_screening_active = False
-                    st.rerun()
+        # Main futures screening button
+        if st.button("🚀 Run Futures Screener", type="primary", use_container_width=True, key="futures_screener_btn"):
+            with st.spinner("Loading futures contracts and screening..."):
+                results = futures_screener.run_optimized_screener(futures_params)
+            
+            st.session_state.futures_results = results
+            st.session_state.futures_params = futures_params
         
         # Display futures results
         if st.session_state.futures_results is not None:
@@ -1646,16 +1592,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
