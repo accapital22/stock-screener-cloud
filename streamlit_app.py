@@ -606,65 +606,65 @@ class OptimizedFuturesScreener:
             st.session_state.futures_screening_active = False
             st.error(f"Error in screening process: {str(e)}")
             return []
-    def display_options_details(selected_stock):
-    """Display detailed options information"""
-    if not selected_stock['options_details']:
-        st.info("No options details available for this stock.")
-        return
-    
-    st.markdown("### 📊 Options Chain Details")
-    
-    # Convert options details to DataFrame
-    options_data = []
-    for option in selected_stock['options_details']:
-        options_data.append({
-            'Expiration': option['expiration'],
-            'Days to Exp': option['days_to_exp'],
-            'Strike': f"${option['strike']}",
-            'Option Price': f"${option['option_price']:.2f}",
-            'Bid/Ask': f"${option['bid']:.2f}/${option['ask']:.2f}",
-            'Volume': f"{option['volume']:,}",
-            'Open Interest': f"{option['open_interest']:,}",
-            'Delta': f"{option['delta']:.2f}",
-            'ITM': 'Yes' if option['in_the_money'] else 'No',
-            'Premium/Contract': f"${option['premium_value']:.2f}",
-            'Breakeven': f"${option['breakeven']:.2f}"
-        })
-    
-    options_df = pd.DataFrame(options_data)
-    
-    # Display options in tabs
-    tab1, tab2 = st.tabs(["📋 Options Table", "🎯 Options Analysis"])
-    
-    with tab1:
-        st.dataframe(options_df, use_container_width=True)
+def display_options_details(selected_stock):
+        """Display detailed options information"""
+        if not selected_stock['options_details']:
+            st.info("No options details available for this stock.")
+            return
         
-        # Download options data
-        csv = options_df.to_csv(index=False)
-        st.download_button(
-            label="📥 Download Options Data",
-            data=csv,
-            file_name=f"{selected_stock['symbol']}_options.csv",
-            mime="text/csv"
-        )
-    
-    with tab2:
-        # Options analysis
-        st.markdown("#### Options Summary")
+        st.markdown("### 📊 Options Chain Details")
         
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            total_premium = sum(opt['premium_value'] for opt in selected_stock['options_details'])
-            st.metric("Total Premium Value", f"${total_premium:.2f}")
-        with col2:
-            avg_delta = np.mean([opt['delta'] for opt in selected_stock['options_details']])
-            st.metric("Average Delta", f"{avg_delta:.2f}")
-        with col3:
-            itm_count = sum(1 for opt in selected_stock['options_details'] if opt['in_the_money'])
-            st.metric("ITM Options", itm_count)
-        with col4:
-            total_oi = sum(opt['open_interest'] for opt in selected_stock['options_details'])
-            st.metric("Total Open Interest", f"{total_oi:,}")
+        # Convert options details to DataFrame
+        options_data = []
+        for option in selected_stock['options_details']:
+            options_data.append({
+                'Expiration': option['expiration'],
+                'Days to Exp': option['days_to_exp'],
+                'Strike': f"${option['strike']}",
+                'Option Price': f"${option['option_price']:.2f}",
+                'Bid/Ask': f"${option['bid']:.2f}/${option['ask']:.2f}",
+                'Volume': f"{option['volume']:,}",
+                'Open Interest': f"{option['open_interest']:,}",
+                'Delta': f"{option['delta']:.2f}",
+                'ITM': 'Yes' if option['in_the_money'] else 'No',
+                'Premium/Contract': f"${option['premium_value']:.2f}",
+                'Breakeven': f"${option['breakeven']:.2f}"
+            })
+        
+        options_df = pd.DataFrame(options_data)
+        
+        # Display options in tabs
+        tab1, tab2 = st.tabs(["📋 Options Table", "🎯 Options Analysis"])
+        
+        with tab1:
+            st.dataframe(options_df, use_container_width=True)
+            
+            # Download options data
+            csv = options_df.to_csv(index=False)
+            st.download_button(
+                label="📥 Download Options Data",
+                data=csv,
+                file_name=f"{selected_stock['symbol']}_options.csv",
+                mime="text/csv"
+            )
+        
+        with tab2:
+            # Options analysis
+            st.markdown("#### Options Summary")
+            
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                total_premium = sum(opt['premium_value'] for opt in selected_stock['options_details'])
+                st.metric("Total Premium Value", f"${total_premium:.2f}")
+            with col2:
+                avg_delta = np.mean([opt['delta'] for opt in selected_stock['options_details']])
+                st.metric("Average Delta", f"{avg_delta:.2f}")
+            with col3:
+                itm_count = sum(1 for opt in selected_stock['options_details'] if opt['in_the_money'])
+                st.metric("ITM Options", itm_count)
+            with col4:
+                total_oi = sum(opt['open_interest'] for opt in selected_stock['options_details'])
+                st.metric("Total Open Interest", f"{total_oi:,}")
 
 def create_tradingview_watchlist(symbols):
     """Create TradingView watchlist content"""
@@ -1644,3 +1644,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
