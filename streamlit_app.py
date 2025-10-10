@@ -330,7 +330,7 @@ class OptimizedScreener:
             return None, f"Error: {str(e)}"
     
     def run_optimized_screener(self, params):
-        """Run optimized screening with pre-filtering and cancel support"""
+        """Run optimized screening with pre-filtering"""
         try:
             symbols_df = self.load_sp500_symbols()
             
@@ -361,13 +361,6 @@ class OptimizedScreener:
             delay_between_requests = 0.3  # Increased from 0.1 to 0.3 seconds
             
             for i, symbol in enumerate(qualified_symbols):
-                # Check if cancellation was requested
-                if st.session_state.cancel_stock_screening:
-                    st.warning("🛑 Stock screening cancelled by user")
-                    st.session_state.stock_screening_active = False
-                    st.session_state.cancel_stock_screening = False
-                    return results
-                
                 status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
                 result, message = self.screen_stock(symbol, params)
                 
@@ -380,7 +373,6 @@ class OptimizedScreener:
                 time.sleep(delay_between_requests)
             
             status_text.text("Screening complete!")
-            st.session_state.stock_screening_active = False
             
             # Show summary
             if not results:
@@ -390,7 +382,6 @@ class OptimizedScreener:
             return results
             
         except Exception as e:
-            st.session_state.stock_screening_active = False
             st.error(f"Error in screening process: {str(e)}")
             return []
 
@@ -554,7 +545,7 @@ class OptimizedFuturesScreener:
             return None, f"Error: {str(e)}"
     
     def run_optimized_screener(self, params):
-        """Run optimized futures screening for bank proximity with cancel support"""
+        """Run optimized futures screening for bank proximity"""
         try:
             symbols_df = self.load_futures_symbols()
             
@@ -576,13 +567,6 @@ class OptimizedFuturesScreener:
             status_text = st.empty()
             
             for i, symbol in enumerate(qualified_symbols):
-                # Check if cancellation was requested
-                if st.session_state.cancel_futures_screening:
-                    st.warning("🛑 Futures screening cancelled by user")
-                    st.session_state.futures_screening_active = False
-                    st.session_state.cancel_futures_screening = False
-                    return results
-                
                 status_text.text(f"🔍 Screening {symbol} ({i+1}/{len(qualified_symbols)})...")
                 result, message = self.screen_futures_contract(symbol, params)
                 
@@ -594,7 +578,6 @@ class OptimizedFuturesScreener:
                 time.sleep(0.3)
             
             status_text.text("Screening complete!")
-            st.session_state.futures_screening_active = False
             
             if not results:
                 st.error("❌ No futures contracts passed screening criteria!")
@@ -603,68 +586,68 @@ class OptimizedFuturesScreener:
             return results
             
         except Exception as e:
-            st.session_state.futures_screening_active = False
             st.error(f"Error in screening process: {str(e)}")
             return []
+
 def display_options_details(selected_stock):
-        """Display detailed options information"""
-        if not selected_stock['options_details']:
-            st.info("No options details available for this stock.")
-            return
+    """Display detailed options information"""
+    if not selected_stock['options_details']:
+        st.info("No options details available for this stock.")
+        return
+    
+    st.markdown("### 📊 Options Chain Details")
+    
+    # Convert options details to DataFrame
+    options_data = []
+    for option in selected_stock['options_details']:
+        options_data.append({
+            'Expiration': option['expiration'],
+            'Days to Exp': option['days_to_exp'],
+            'Strike': f"${option['strike']}",
+            'Option Price': f"${option['option_price']:.2f}",
+            'Bid/Ask': f"${option['bid']:.2f}/${option['ask']:.2f}",
+            'Volume': f"{option['volume']:,}",
+            'Open Interest': f"{option['open_interest']:,}",
+            'Delta': f"{option['delta']:.2f}",
+            'ITM': 'Yes' if option['in_the_money'] else 'No',
+            'Premium/Contract': f"${option['premium_value']:.2f}",
+            'Breakeven': f"${option['breakeven']:.2f}"
+        })
+    
+    options_df = pd.DataFrame(options_data)
+    
+    # Display options in tabs
+    tab1, tab2 = st.tabs(["📋 Options Table", "🎯 Options Analysis"])
+    
+    with tab1:
+        st.dataframe(options_df, use_container_width=True)
         
-        st.markdown("### 📊 Options Chain Details")
+        # Download options data
+        csv = options_df.to_csv(index=False)
+        st.download_button(
+            label="📥 Download Options Data",
+            data=csv,
+            file_name=f"{selected_stock['symbol']}_options.csv",
+            mime="text/csv"
+        )
+    
+    with tab2:
+        # Options analysis
+        st.markdown("#### Options Summary")
         
-        # Convert options details to DataFrame
-        options_data = []
-        for option in selected_stock['options_details']:
-            options_data.append({
-                'Expiration': option['expiration'],
-                'Days to Exp': option['days_to_exp'],
-                'Strike': f"${option['strike']}",
-                'Option Price': f"${option['option_price']:.2f}",
-                'Bid/Ask': f"${option['bid']:.2f}/${option['ask']:.2f}",
-                'Volume': f"{option['volume']:,}",
-                'Open Interest': f"{option['open_interest']:,}",
-                'Delta': f"{option['delta']:.2f}",
-                'ITM': 'Yes' if option['in_the_money'] else 'No',
-                'Premium/Contract': f"${option['premium_value']:.2f}",
-                'Breakeven': f"${option['breakeven']:.2f}"
-            })
-        
-        options_df = pd.DataFrame(options_data)
-        
-        # Display options in tabs
-        tab1, tab2 = st.tabs(["📋 Options Table", "🎯 Options Analysis"])
-        
-        with tab1:
-            st.dataframe(options_df, use_container_width=True)
-            
-            # Download options data
-            csv = options_df.to_csv(index=False)
-            st.download_button(
-                label="📥 Download Options Data",
-                data=csv,
-                file_name=f"{selected_stock['symbol']}_options.csv",
-                mime="text/csv"
-            )
-        
-        with tab2:
-            # Options analysis
-            st.markdown("#### Options Summary")
-            
-            col1, col2, col3, col4 = st.columns(4)
-            with col1:
-                total_premium = sum(opt['premium_value'] for opt in selected_stock['options_details'])
-                st.metric("Total Premium Value", f"${total_premium:.2f}")
-            with col2:
-                avg_delta = np.mean([opt['delta'] for opt in selected_stock['options_details']])
-                st.metric("Average Delta", f"{avg_delta:.2f}")
-            with col3:
-                itm_count = sum(1 for opt in selected_stock['options_details'] if opt['in_the_money'])
-                st.metric("ITM Options", itm_count)
-            with col4:
-                total_oi = sum(opt['open_interest'] for opt in selected_stock['options_details'])
-                st.metric("Total Open Interest", f"{total_oi:,}")
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            total_premium = sum(opt['premium_value'] for opt in selected_stock['options_details'])
+            st.metric("Total Premium Value", f"${total_premium:.2f}")
+        with col2:
+            avg_delta = np.mean([opt['delta'] for opt in selected_stock['options_details']])
+            st.metric("Average Delta", f"{avg_delta:.2f}")
+        with col3:
+            itm_count = sum(1 for opt in selected_stock['options_details'] if opt['in_the_money'])
+            st.metric("ITM Options", itm_count)
+        with col4:
+            total_oi = sum(opt['open_interest'] for opt in selected_stock['options_details'])
+            st.metric("Total Open Interest", f"{total_oi:,}")
 
 def create_tradingview_watchlist(symbols):
     """Create TradingView watchlist content"""
@@ -1087,7 +1070,6 @@ def send_email_with_attachment(pdf_buffer, recipient_emails, report_type="stocks
     except Exception as e:
         st.error(f"Error sending email: {str(e)}")
         return False
-
 def main():
     st.markdown('<h1 class="main-header">📈 Clarity Pro 9.0 Suite</h1>', unsafe_allow_html=True)
     st.markdown("### Advanced Stock & Futures Screening Platform")
@@ -1101,16 +1083,6 @@ def main():
         st.session_state.futures_results = None
     if 'futures_params' not in st.session_state:
         st.session_state.futures_params = None
-    
-    # ADD CANCEL FLAGS HERE
-    if 'stock_screening_active' not in st.session_state:
-        st.session_state.stock_screening_active = False
-    if 'futures_screening_active' not in st.session_state:
-        st.session_state.futures_screening_active = False
-    if 'cancel_stock_screening' not in st.session_state:
-        st.session_state.cancel_stock_screening = False
-    if 'cancel_futures_screening' not in st.session_state:
-        st.session_state.cancel_futures_screening = False
     
     # Initialize screeners
     stock_screener = OptimizedScreener()
@@ -1181,26 +1153,14 @@ def main():
             'min_open_interest': min_open_interest
         }
         
-        # Main stock screening button with cancel
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            if st.button("🚀 Run Stock Screener", type="primary", use_container_width=True, key="stock_screener_btn"):
-                st.session_state.stock_screening_active = True
-                st.session_state.cancel_stock_screening = False
-                with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
-                    results = stock_screener.run_optimized_screener(stock_params)
-                
-                # Store results in session state
-                st.session_state.stock_results = results
-                st.session_state.stock_params = stock_params
-
-        with col2:
-            if st.session_state.stock_screening_active:
-                if st.button("🛑 Cancel Stock Screening", type="secondary", use_container_width=True, key="cancel_stock_btn"):
-                    st.session_state.cancel_stock_screening = True
-                    st.session_state.stock_screening_active = False
-                    st.rerun()
+        # Main stock screening button
+        if st.button("🚀 Run Stock Screener", type="primary", use_container_width=True, key="stock_screener_btn"):
+            with st.spinner("Loading S&P 500 symbols and pre-filtering..."):
+                results = stock_screener.run_optimized_screener(stock_params)
+            
+            # Store results in session state
+            st.session_state.stock_results = results
+            st.session_state.stock_params = stock_params
         
         # Display stock results from session state (if they exist)
         if st.session_state.stock_results is not None:
@@ -1464,25 +1424,13 @@ def main():
             'category_filter': futures_categories
         }
         
-        # Main futures screening button with cancel
-        col1, col2 = st.columns([3, 1])
-
-        with col1:
-            if st.button("🚀 Run Futures Screener", type="primary", use_container_width=True, key="futures_screener_btn"):
-                st.session_state.futures_screening_active = True
-                st.session_state.cancel_futures_screening = False
-                with st.spinner("Loading futures contracts and screening..."):
-                    results = futures_screener.run_optimized_screener(futures_params)
-                
-                st.session_state.futures_results = results
-                st.session_state.futures_params = futures_params
-
-        with col2:
-            if st.session_state.futures_screening_active:
-                if st.button("🛑 Cancel Futures Screening", type="secondary", use_container_width=True, key="cancel_futures_btn"):
-                    st.session_state.cancel_futures_screening = True
-                    st.session_state.futures_screening_active = False
-                    st.rerun()
+        # Main futures screening button
+        if st.button("🚀 Run Futures Screener", type="primary", use_container_width=True, key="futures_screener_btn"):
+            with st.spinner("Loading futures contracts and screening..."):
+                results = futures_screener.run_optimized_screener(futures_params)
+            
+            st.session_state.futures_results = results
+            st.session_state.futures_params = futures_params
         
         # Display futures results
         if st.session_state.futures_results is not None:
