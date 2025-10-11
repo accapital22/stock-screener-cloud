@@ -1599,66 +1599,66 @@ def main():
 
                 # Results table for dashboard - Apply same sorting logic and column order
                 if sorted_for_dashboard:
-                else:
-                    # Fallback if no sorted results
-                    results_df = pd.DataFrame([{
-                        'Stock': r['symbol'],
-                        'Timeframe': r['timeframe_label'],
-                        'Stock_Price': f"${r['price']:.2f}",
-                        'Bank_Price': f"${r['ma']:.2f}",
-                        'Bank_Diff': f"{r['ma_diff_percent']:+.2f}%",
-                        'Options_Found': r['options_count']
-                    } for r in results])
-                
-                st.dataframe(results_df, use_container_width=True)
-                
-                # TradingView Integration Section
-                st.markdown("### 📊 TradingView Integration")
-                
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    # Copy to clipboard option
-                    watchlist_text = create_tradingview_watchlist(passing_symbols)
-                    st.text_area("📋 Copy to Clipboard", 
-                               value=watchlist_text, 
-                               height=100,
-                               help="Copy these symbols and paste into TradingView watchlist")
-                
-                with col2:
-                    # Download watchlist file
-                    watchlist_file = create_tradingview_watchlist_file(passing_symbols)
-                    st.download_button(
-                        label="📥 Download Watchlist File",
-                        data=watchlist_file,
-                        file_name="tradingview_watchlist.txt",
-                        mime="text/plain",
-                        help="Download as .txt file and import into TradingView"
+                    else:
+                        # Fallback if no sorted results
+                        results_df = pd.DataFrame([{
+                            'Stock': r['symbol'],
+                            'Timeframe': r['timeframe_label'],
+                            'Stock_Price': f"${r['price']:.2f}",
+                            'Bank_Price': f"${r['ma']:.2f}",
+                            'Bank_Diff': f"{r['ma_diff_percent']:+.2f}%",
+                            'Options_Found': r['options_count']
+                        } for r in results])
+                    
+                    st.dataframe(results_df, use_container_width=True)
+                    
+                    # TradingView Integration Section
+                    st.markdown("### 📊 TradingView Integration")
+                    
+                    col1, col2, col3 = st.columns(3)
+                    
+                    with col1:
+                        # Copy to clipboard option
+                        watchlist_text = create_tradingview_watchlist(passing_symbols)
+                        st.text_area("📋 Copy to Clipboard", 
+                                   value=watchlist_text, 
+                                   height=100,
+                                   help="Copy these symbols and paste into TradingView watchlist")
+                    
+                    with col2:
+                        # Download watchlist file
+                        watchlist_file = create_tradingview_watchlist_file(passing_symbols)
+                        st.download_button(
+                            label="📥 Download Watchlist File",
+                            data=watchlist_file,
+                            file_name="tradingview_watchlist.txt",
+                            mime="text/plain",
+                            help="Download as .txt file and import into TradingView"
+                        )
+                    
+                    with col3:
+                        # Multi-chart link
+                        multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
+                        if multi_chart_url:
+                            st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
+                            st.caption("Opens first 8 symbols in TradingView multi-chart")
+                    
+                    st.markdown("""
+                    **How to import into TradingView:**
+                    1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
+                    2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
+                    3. **Multi-Chart**: Click the link to open multiple charts simultaneously
+                    """)
+                    
+                    # Detailed analysis section
+                    st.markdown("### 📊 Detailed Analysis")
+                    
+                    # Let user select a stock for detailed view
+                    selected_symbol = st.selectbox(
+                        "Select stock for detailed analysis", 
+                        [r['symbol'] for r in results],
+                        key="stock_selector"
                     )
-                
-                with col3:
-                    # Multi-chart link
-                    multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
-                    if multi_chart_url:
-                        st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
-                        st.caption("Opens first 8 symbols in TradingView multi-chart")
-                
-                st.markdown("""
-                **How to import into TradingView:**
-                1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
-                2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
-                3. **Multi-Chart**: Click the link to open multiple charts simultaneously
-                """)
-                
-                # Detailed analysis section
-                st.markdown("### 📊 Detailed Analysis")
-                
-                # Let user select a stock for detailed view
-                selected_symbol = st.selectbox(
-                    "Select stock for detailed analysis", 
-                    [r['symbol'] for r in results],
-                    key="stock_selector"
-                )
                 
                 if selected_symbol:
                     selected_stock = next(r for r in results if r['symbol'] == selected_symbol)
@@ -1934,6 +1934,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
