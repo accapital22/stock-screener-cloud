@@ -306,9 +306,9 @@ class OptimizedScreener:
                 return None, f"Market cap ${market_cap/1e9:.1f}B below requirement"
             
             # OPTIONS CHECK
+            # Options is secondary - stock can pass MA rule even without options
             options_data = self.get_detailed_options_data(symbol, current_price, params)
-            if not options_data['has_valid_options']:
-                return None, "No valid options found"
+            # NOTE: We no longer return None if no options found - MA rule is primary
             
             stock_data = {
                 'symbol': symbol,
@@ -377,12 +377,12 @@ class OptimizedScreener:
                 return None, f"Market cap ${market_cap/1e9:.1f}B below requirement"
             
             # OPTIONS CHECK (only for daily timeframe to avoid rate limiting)
+            # Options is secondary - stock can pass MA rule even without options
             options_data = {'has_valid_options': False, 'options_count': 0, 'details': []}
             if timeframe['interval'] == '1d':  # Only check options for daily timeframe
                 options_data = self.get_detailed_options_data(symbol, current_price, params)
-            
-            if not options_data['has_valid_options'] and timeframe['interval'] == '1d':
-                return None, "No valid options found"
+                
+            # NOTE: We no longer return None if no options found - MA rule is primary
             
             stock_data = {
                 'symbol': symbol,
@@ -1498,21 +1498,39 @@ def main():
                         if result['symbol'] not in seen_symbols:
                             # Find the original stock data
                             stock_data = next(r for r in results if r['symbol'] == result['symbol'])
-                            dashboard_data.append({
-                                'Stock': result['symbol'],
-                                'Timeframe': result['timeframe_label'],
-                                'Stock_Price': f"${result['stock_price']:.2f}",
-                                'Bank_Price': f"${result['bank_price']:.2f}",
-                                'Option_Strike': f"${result['option_strike']}",
-                                'Option_Price': f"${result['option_price']:.2f}",
-                                'Delta': f"{result['delta']:.2f}",
-                                'Open_Interest': f"{result['open_interest']:,}",
-                                'Bid/Ask': f"${result['bid']:.2f}/${result['ask']:.2f}",
-                                'Expiration': result['expiration'],
-                                'Days_To_Exp': str(result['days_to_exp']),
-                                'ITM': 'Yes' if result['itm'] else 'No',
-                                'Bank_Diff': f"{result['bank_diff_percent']:+.2f}%"
-                            })
+                            # Check if options data exists
+                            if result['options_count'] > 0:
+                                dashboard_data.append({
+                                    'Stock': result['symbol'],
+                                    'Timeframe': result['timeframe_label'],
+                                    'Stock_Price': f"${result['stock_price']:.2f}",
+                                    'Bank_Price': f"${result['bank_price']:.2f}",
+                                    'Option_Strike': f"${result['option_strike']}",
+                                    'Option_Price': f"${result['option_price']:.2f}",
+                                    'Delta': f"{result['delta']:.2f}",
+                                    'Open_Interest': f"{result['open_interest']:,}",
+                                    'Bid/Ask': f"${result['bid']:.2f}/${result['ask']:.2f}",
+                                    'Expiration': result['expiration'],
+                                    'Days_To_Exp': str(result['days_to_exp']),
+                                    'ITM': 'Yes' if result['itm'] else 'No',
+                                    'Bank_Diff': f"{result['bank_diff_percent']:+.2f}%"
+                                })
+                            else:
+                                dashboard_data.append({
+                                    'Stock': result['symbol'],
+                                    'Timeframe': result['timeframe_label'],
+                                    'Stock_Price': f"${result['price']:.2f}",
+                                    'Bank_Price': f"${result['ma']:.2f}",
+                                    'Option_Strike': 'No Options',
+                                    'Option_Price': 'N/A',
+                                    'Delta': 'N/A',
+                                    'Open_Interest': 'N/A',
+                                    'Bid/Ask': 'N/A',
+                                    'Expiration': 'N/A',
+                                    'Days_To_Exp': 'N/A',
+                                    'ITM': 'N/A',
+                                    'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%"
+                                })
                             seen_symbols.add(result['symbol'])
                     
                     results_df = pd.DataFrame(dashboard_data)
@@ -1851,5 +1869,6 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
