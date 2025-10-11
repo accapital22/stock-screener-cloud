@@ -606,7 +606,7 @@ class OptimizedFuturesScreener:
             st.session_state.futures_screening_active = False
             st.error(f"Error in screening process: {str(e)}")
             return []
-    def display_options_details(selected_stock):
+def display_options_details(selected_stock):
     """Display detailed options information"""
     if not selected_stock['options_details']:
         st.info("No options details available for this stock.")
@@ -1644,3 +1644,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
