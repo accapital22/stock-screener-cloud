@@ -1341,7 +1341,7 @@ def send_email_with_attachment(pdf_buffer, recipient_emails, report_type="stocks
     except Exception as e:
         st.error(f"Error sending email: {str(e)}")
         return False
-    def main():
+def main():
     st.markdown('<h1 class="main-header">📈 Clarity Pro 9.0 Suite</h1>', unsafe_allow_html=True)
     st.markdown("### Advanced Stock & Futures Screening Platform")
     
@@ -1923,4 +1923,5 @@ def send_email_with_attachment(pdf_buffer, recipient_emails, report_type="stocks
 
 if __name__ == "__main__":
     main()
+
 
