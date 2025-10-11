@@ -634,7 +634,7 @@ class OptimizedFuturesScreener:
             # STRICT RULE: Futures price must be greater than bank price (same as stocks)
             if current_price <= current_ma:
                 return None, f"Futures price ${current_price:.2f} ≤ bank price ${current_ma:.2f}"
-            
+
             if abs(ma_diff_percent) > params['ma_threshold']:
                 return None, f"Bank diff {ma_diff_percent:.2f}% > threshold"
             
@@ -693,7 +693,7 @@ class OptimizedFuturesScreener:
             # STRICT RULE: Futures price must be greater than bank price (same as stocks)
             if current_price <= current_ma:
                 return None, f"Futures price ${current_price:.2f} ≤ bank price ${current_ma:.2f}"
-            
+
             if abs(ma_diff_percent) > params['ma_threshold']:
                 return None, f"Bank diff {ma_diff_percent:.2f}% > threshold"
             
@@ -794,7 +794,7 @@ class OptimizedFuturesScreener:
             st.session_state.futures_screening_active = False
             st.error(f"Error in screening process: {str(e)}")
             return []
-def display_options_details(selected_stock):
+    def display_options_details(selected_stock):
     """Display detailed options information"""
     if not selected_stock['options_details']:
         st.info("No options details available for this stock.")
@@ -1064,7 +1064,7 @@ def create_pdf_report(results, params):
                 
                 current_timeframe = None
                 current_delta = None
-                
+
                 for i, result in enumerate(sorted_results):
                     # Add separator row when timeframe changes
                     if current_timeframe is not None and result['timeframe_label'] != current_timeframe:
@@ -1214,8 +1214,9 @@ def create_futures_pdf_report(results, params):
         story.append(summary)
         
         if results:
-            # Sort by bank proximity (closest to bank price first)
-            results_sorted = sorted(results, key=lambda x: abs(x['ma_diff_percent']))
+            # Sort by timeframe: Daily -> Weekly -> Monthly
+            timeframe_order = {'Daily (1Y)': 1, 'Weekly (2Y)': 2, 'Monthly (5Y)': 3}
+            results_sorted = sorted(results, key=lambda x: timeframe_order.get(x['timeframe_label'], 99))
             
             results_data = [[
                 'Contract', 'Timeframe', 'Price', 'Bank_Price', 'Bank_Diff', 'Volume', 'Category'
@@ -1340,7 +1341,7 @@ def send_email_with_attachment(pdf_buffer, recipient_emails, report_type="stocks
     except Exception as e:
         st.error(f"Error sending email: {str(e)}")
         return False
-def main():
+    def main():
     st.markdown('<h1 class="main-header">📈 Clarity Pro 9.0 Suite</h1>', unsafe_allow_html=True)
     st.markdown("### Advanced Stock & Futures Screening Platform")
     
@@ -1554,7 +1555,7 @@ def main():
                 # Sort results by timeframe: Daily -> Weekly -> Monthly
                 timeframe_order = {'Daily (1Y)': 1, 'Weekly (2Y)': 2, 'Monthly (5Y)': 3}
                 results_sorted = sorted(results, key=lambda x: timeframe_order.get(x['timeframe_label'], 99))
-                
+
                 # Results table for dashboard
                 dashboard_data = []
                 for result in results_sorted:
@@ -1594,71 +1595,58 @@ def main():
                             'ITM': 'N/A',
                             'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%"
                         })
-                
-                results_df = pd.DataFrame(dashboard_data)
 
-                # Results table for dashboard - Apply same sorting logic and column order
-                if sorted_for_dashboard:
-                    else:
-                        # Fallback if no sorted results
-                        results_df = pd.DataFrame([{
-                            'Stock': r['symbol'],
-                            'Timeframe': r['timeframe_label'],
-                            'Stock_Price': f"${r['price']:.2f}",
-                            'Bank_Price': f"${r['ma']:.2f}",
-                            'Bank_Diff': f"{r['ma_diff_percent']:+.2f}%",
-                            'Options_Found': r['options_count']
-                        } for r in results])
-                    
-                    st.dataframe(results_df, use_container_width=True)
-                    
-                    # TradingView Integration Section
-                    st.markdown("### 📊 TradingView Integration")
-                    
-                    col1, col2, col3 = st.columns(3)
-                    
-                    with col1:
-                        # Copy to clipboard option
-                        watchlist_text = create_tradingview_watchlist(passing_symbols)
-                        st.text_area("📋 Copy to Clipboard", 
-                                   value=watchlist_text, 
-                                   height=100,
-                                   help="Copy these symbols and paste into TradingView watchlist")
-                    
-                    with col2:
-                        # Download watchlist file
-                        watchlist_file = create_tradingview_watchlist_file(passing_symbols)
-                        st.download_button(
-                            label="📥 Download Watchlist File",
-                            data=watchlist_file,
-                            file_name="tradingview_watchlist.txt",
-                            mime="text/plain",
-                            help="Download as .txt file and import into TradingView"
-                        )
-                    
-                    with col3:
-                        # Multi-chart link
-                        multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
-                        if multi_chart_url:
-                            st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
-                            st.caption("Opens first 8 symbols in TradingView multi-chart")
-                    
-                    st.markdown("""
-                    **How to import into TradingView:**
-                    1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
-                    2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
-                    3. **Multi-Chart**: Click the link to open multiple charts simultaneously
-                    """)
-                    
-                    # Detailed analysis section
-                    st.markdown("### 📊 Detailed Analysis")
-                    
-                    # Let user select a stock for detailed view
-                    selected_symbol = st.selectbox(
-                        "Select stock for detailed analysis", 
-                        [r['symbol'] for r in results],
-                        key="stock_selector"
+                results_df = pd.DataFrame(dashboard_data)
+                
+                st.dataframe(results_df, use_container_width=True)
+                
+                # TradingView Integration Section
+                st.markdown("### 📊 TradingView Integration")
+                
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    # Copy to clipboard option
+                    watchlist_text = create_tradingview_watchlist(passing_symbols)
+                    st.text_area("📋 Copy to Clipboard", 
+                               value=watchlist_text, 
+                               height=100,
+                               help="Copy these symbols and paste into TradingView watchlist")
+                
+                with col2:
+                    # Download watchlist file
+                    watchlist_file = create_tradingview_watchlist_file(passing_symbols)
+                    st.download_button(
+                        label="📥 Download Watchlist File",
+                        data=watchlist_file,
+                        file_name="tradingview_watchlist.txt",
+                        mime="text/plain",
+                        help="Download as .txt file and import into TradingView"
                     )
+                
+                with col3:
+                    # Multi-chart link
+                    multi_chart_url = create_tradingview_multichart_url(passing_symbols[:8])
+                    if multi_chart_url:
+                        st.markdown(f"[🔄 Open Multi-Chart]({multi_chart_url})", unsafe_allow_html=True)
+                        st.caption("Opens first 8 symbols in TradingView multi-chart")
+                
+                st.markdown("""
+                **How to import into TradingView:**
+                1. **Copy Method**: Copy the symbols above and paste into a new TradingView watchlist
+                2. **File Method**: Download the .txt file and import via TradingView Watchlist settings
+                3. **Multi-Chart**: Click the link to open multiple charts simultaneously
+                """)
+                
+                # Detailed analysis section
+                st.markdown("### 📊 Detailed Analysis")
+                
+                # Let user select a stock for detailed view
+                selected_symbol = st.selectbox(
+                    "Select stock for detailed analysis", 
+                    [r['symbol'] for r in results],
+                    key="stock_selector"
+                )
                 
                 if selected_symbol:
                     selected_stock = next(r for r in results if r['symbol'] == selected_symbol)
@@ -1781,8 +1769,9 @@ def main():
             if results:
                 st.success(f"🎉 Found {len(results)} qualifying futures contracts near bank prices!")
                 
-                # Sort by closest to bank price
-                results_sorted = sorted(results, key=lambda x: abs(x['ma_diff_percent']))
+                # Sort by timeframe: Daily -> Weekly -> Monthly
+                timeframe_order = {'Daily (1Y)': 1, 'Weekly (2Y)': 2, 'Monthly (5Y)': 3}
+                results_sorted = sorted(results, key=lambda x: timeframe_order.get(x['timeframe_label'], 99))
                 
                 # Add separator and header for futures list
                 st.markdown("---")
@@ -1934,11 +1923,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
