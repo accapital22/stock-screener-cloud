@@ -1596,7 +1596,10 @@ def main():
                         })
                 
                 results_df = pd.DataFrame(dashboard_data)
-                    else:
+
+                # Results table for dashboard - Apply same sorting logic and column order
+                if sorted_for_dashboard:
+                else:
                     # Fallback if no sorted results
                     results_df = pd.DataFrame([{
                         'Stock': r['symbol'],
@@ -1931,6 +1934,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
