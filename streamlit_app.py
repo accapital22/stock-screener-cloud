@@ -925,9 +925,16 @@ def get_bank_name(ma_period):
     return bank_names.get(ma_period, f"Bank {ma_period}")
 
 def sort_results_for_pdf(results):
-    """Sort results for PDF report with the specified hierarchy"""
+    """Sort results for PDF report with timeframe hierarchy: Daily -> Weekly -> Monthly"""
     if not results:
         return []
+    
+    # Create timeframe priority mapping
+    timeframe_priority = {
+        'Daily (1Y)': 1,
+        'Weekly (2Y)': 2, 
+        'Monthly (5Y)': 3
+    }
     
     # Create a flattened list that handles both stocks with and without options
     flattened_results = []
@@ -938,6 +945,7 @@ def sort_results_for_pdf(results):
                 flattened_results.append({
                     'symbol': stock['symbol'],
                     'timeframe_label': stock['timeframe_label'],
+                    'timeframe_priority': timeframe_priority.get(stock['timeframe_label'], 99),
                     'stock_price': stock['price'],
                     'bank_price': stock['ma'],
                     'bank_diff_percent': stock['ma_diff_percent'],
@@ -957,6 +965,7 @@ def sort_results_for_pdf(results):
             flattened_results.append({
                 'symbol': stock['symbol'],
                 'timeframe_label': stock['timeframe_label'],
+                'timeframe_priority': timeframe_priority.get(stock['timeframe_label'], 99),
                 'stock_price': stock['price'],
                 'bank_price': stock['ma'],
                 'bank_diff_percent': stock['ma_diff_percent'],
@@ -978,10 +987,9 @@ def sort_results_for_pdf(results):
     if len(df) == 0:
         return []
     
-    # Apply the sorting hierarchy: Delta (desc), Option_Price (asc), Symbol (asc)
-    # For stocks without options, they'll sort to the bottom
-    df_sorted = df.sort_values(['has_options', 'delta', 'option_price', 'symbol'], 
-                              ascending=[False, False, True, True])
+    # Apply the sorting hierarchy: Timeframe -> Delta -> Option_Price -> Symbol
+    df_sorted = df.sort_values(['timeframe_priority', 'has_options', 'delta', 'option_price', 'symbol'], 
+                              ascending=[True, False, False, True, True])
     
     return df_sorted.to_dict('records')
 
@@ -1054,11 +1062,25 @@ def create_pdf_report(results, params):
                     'Delta', 'Open_Interest', 'Bid/Ask', 'Expiration', 'Days_To_Exp', 'ITM', 'Bank_Diff'
                 ]]
                 
+                current_timeframe = None
                 current_delta = None
+                
                 for i, result in enumerate(sorted_results):
-                    # Add blank row when delta changes (with dark grey background)
-                    if current_delta is not None and result['delta'] != current_delta and result['has_options']:
-                        results_data.append([''] * 13)  # Blank row for separation
+                    # Add separator row when timeframe changes
+                    if current_timeframe is not None and result['timeframe_label'] != current_timeframe:
+                        results_data.append([''] * 13)  # Blank row for timeframe separation
+                        # Add timeframe header row
+                        timeframe_header = [''] * 13
+                        timeframe_header[0] = f"=== {result['timeframe_label'].upper()} ==="
+                        results_data.append(timeframe_header)
+                        results_data.append([''] * 13)  # Another blank row
+                    
+                    current_timeframe = result['timeframe_label']
+                    
+                    # Add blank row when delta changes (only for stocks with options)
+                    if (current_delta is not None and result['delta'] != current_delta and 
+                        result['has_options'] and result['timeframe_label'] == current_timeframe):
+                        results_data.append([''] * 13)  # Blank row for delta separation
                     
                     current_delta = result['delta']
                     
@@ -1529,49 +1551,51 @@ def main():
                 else:
                     passing_symbols = [r['symbol'] for r in results]
                 
-                # Results table for dashboard - Apply same sorting logic and column order
-                if sorted_for_dashboard:
-                    # Results table for dashboard
-                    dashboard_data = []
-                    for result in results:
-                        # Check if options data exists and has details
-                        if result.get('options_details') and len(result['options_details']) > 0:
-                            # Stock has options - use the first option for display
-                            first_option = result['options_details'][0]
-                            dashboard_data.append({
-                                'Stock': result['symbol'],
-                                'Timeframe': result['timeframe_label'],
-                                'Stock_Price': f"${result['price']:.2f}",
-                                'Bank_Price': f"${result['ma']:.2f}",
-                                'Option_Strike': f"${first_option['strike']}",
-                                'Option_Price': f"${first_option['option_price']:.2f}",
-                                'Delta': f"{first_option['delta']:.2f}",
-                                'Open_Interest': f"{first_option['open_interest']:,}",
-                                'Bid/Ask': f"${first_option['bid']:.2f}/${first_option['ask']:.2f}",
-                                'Expiration': first_option['expiration'],
-                                'Days_To_Exp': str(first_option['days_to_exp']),
-                                'ITM': 'Yes' if first_option['in_the_money'] else 'No',
-                                'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%"
-                            })
-                        else:
-                            # Stock has no options
-                            dashboard_data.append({
-                                'Stock': result['symbol'],
-                                'Timeframe': result['timeframe_label'],
-                                'Stock_Price': f"${result['price']:.2f}",
-                                'Bank_Price': f"${result['ma']:.2f}",
-                                'Option_Strike': 'No Options',
-                                'Option_Price': 'N/A',
-                                'Delta': 'N/A',
-                                'Open_Interest': 'N/A',
-                                'Bid/Ask': 'N/A',
-                                'Expiration': 'N/A',
-                                'Days_To_Exp': 'N/A',
-                                'ITM': 'N/A',
-                                'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%"
-                            })
-                    
-                    results_df = pd.DataFrame(dashboard_data)
+                # Sort results by timeframe: Daily -> Weekly -> Monthly
+                timeframe_order = {'Daily (1Y)': 1, 'Weekly (2Y)': 2, 'Monthly (5Y)': 3}
+                results_sorted = sorted(results, key=lambda x: timeframe_order.get(x['timeframe_label'], 99))
+                
+                # Results table for dashboard
+                dashboard_data = []
+                for result in results_sorted:
+                    # Check if options data exists and has details
+                    if result.get('options_details') and len(result['options_details']) > 0:
+                        # Stock has options - use the first option for display
+                        first_option = result['options_details'][0]
+                        dashboard_data.append({
+                            'Stock': result['symbol'],
+                            'Timeframe': result['timeframe_label'],
+                            'Stock_Price': f"${result['price']:.2f}",
+                            'Bank_Price': f"${result['ma']:.2f}",
+                            'Option_Strike': f"${first_option['strike']}",
+                            'Option_Price': f"${first_option['option_price']:.2f}",
+                            'Delta': f"{first_option['delta']:.2f}",
+                            'Open_Interest': f"{first_option['open_interest']:,}",
+                            'Bid/Ask': f"${first_option['bid']:.2f}/${first_option['ask']:.2f}",
+                            'Expiration': first_option['expiration'],
+                            'Days_To_Exp': str(first_option['days_to_exp']),
+                            'ITM': 'Yes' if first_option['in_the_money'] else 'No',
+                            'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%"
+                        })
+                    else:
+                        # Stock has no options
+                        dashboard_data.append({
+                            'Stock': result['symbol'],
+                            'Timeframe': result['timeframe_label'],
+                            'Stock_Price': f"${result['price']:.2f}",
+                            'Bank_Price': f"${result['ma']:.2f}",
+                            'Option_Strike': 'No Options',
+                            'Option_Price': 'N/A',
+                            'Delta': 'N/A',
+                            'Open_Interest': 'N/A',
+                            'Bid/Ask': 'N/A',
+                            'Expiration': 'N/A',
+                            'Days_To_Exp': 'N/A',
+                            'ITM': 'N/A',
+                            'Bank_Diff': f"{result['ma_diff_percent']:+.2f}%"
+                        })
+                
+                results_df = pd.DataFrame(dashboard_data)
                 else:
                     # Fallback if no sorted results
                     results_df = pd.DataFrame([{
@@ -1907,6 +1931,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
