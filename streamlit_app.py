@@ -631,6 +631,10 @@ class OptimizedFuturesScreener:
             current_ma = hist['MA'].iloc[-1]
             ma_diff_percent = ((current_price - current_ma) / current_ma) * 100
             
+            # STRICT RULE: Futures price must be greater than bank price (same as stocks)
+            if current_price <= current_ma:
+                return None, f"Futures price ${current_price:.2f} ≤ bank price ${current_ma:.2f}"
+            
             if abs(ma_diff_percent) > params['ma_threshold']:
                 return None, f"Bank diff {ma_diff_percent:.2f}% > threshold"
             
@@ -685,6 +689,10 @@ class OptimizedFuturesScreener:
             hist['MA'] = self.calculate_moving_average(hist['Close'], ma_type, ma_period)
             current_ma = hist['MA'].iloc[-1]
             ma_diff_percent = ((current_price - current_ma) / current_ma) * 100
+            
+            # STRICT RULE: Futures price must be greater than bank price (same as stocks)
+            if current_price <= current_ma:
+                return None, f"Futures price ${current_price:.2f} ≤ bank price ${current_ma:.2f}"
             
             if abs(ma_diff_percent) > params['ma_threshold']:
                 return None, f"Bank diff {ma_diff_percent:.2f}% > threshold"
@@ -1843,4 +1851,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
